@@ -25,4 +25,5 @@ Since any **undirected edge** between two vertices of the graph of _I_ would for
 The **observer pattern** can suffer from what is known as the **lapsed listener problem**. The **lapsed listener problem** occurs when there exists a **Subscription** that is no longer required by its **Observer**. Not solving the **lapsed listener problem** leads to **notifications** being unnecessarily caught by an **Observer** which is a cost in performance. The **lapsed listener problem** can also lead to memory leaks since the active references created by the **Subscription** prevent the **Subject** from being garbage collected.
 
 The **lapsed listener problem** can be solved by employing the **dispose pattern**.
+(see <a href="https://github.com/ttowncompiled/observer.api/blob/theory/theory/dispose_pattern.md">dispose_pattern.md</a>)
 
