@@ -10,3 +10,5 @@ export interface AbstractObservable<T> {
   subscribe: (observer: Observer<T>) => void;
 }
 
+export interface AbstractSubject<T> extends Observer<T>, AbstractObservable<T> {}
+
