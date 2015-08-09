@@ -6,3 +6,7 @@ export interface Observer<T> {
   next: OnNext<T>;
 }
 
+export interface AbstractObservable<T> {
+  subscribe: (observer: Observer<T>) => void;
+}
+
