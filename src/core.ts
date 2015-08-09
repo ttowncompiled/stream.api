@@ -1,4 +1,9 @@
-import { OnComplete, OnError, OnNext } from './types';
+import { Callback, OnComplete, OnError, OnNext } from './types';
+
+export interface AbstractScheduler {
+  schedule(cb: Callback): void;
+  tick(): void;
+}
 
 export interface Disposable {
   dispose: () => void;
