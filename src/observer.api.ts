@@ -1,2 +1,2 @@
-export { AbstractObservable, AbstractScheduler, AbstractSubject, Disposable, Observer } from './core';
+export { AbstractObservable, Observer } from './core';
 
