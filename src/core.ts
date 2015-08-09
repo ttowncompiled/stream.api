@@ -4,3 +4,7 @@ export interface Observer<T> {
   next: (item?: T) => void;
 }
 
+export interface Observable<T> {
+  subscribe: (observer: Observer<T>) => void;
+}
+
