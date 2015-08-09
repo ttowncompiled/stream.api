@@ -1,0 +1,29 @@
+{
+  "name": "observer.api",
+  "version": "0.0.0-prealpha-1",
+  "description": "An API abstraction over the observer pattern.",
+  "main": "index.js",
+  "scripts": {
+    "build": "npm run clean && tsc",
+    "build_watch": "npm run clean && tsc -w",
+    "clean": "rm -rf dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ttowncompiled/observer.api.git"
+  },
+  "keywords": [
+    "Observer"
+  ],
+  "author": "ttowncompiled",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/ttowncompiled/observer.api/issues"
+  },
+  "homepage": "https://github.com/ttowncompiled/observer.api#readme",
+  "devDependencies": {
+    "typescript": "Microsoft/TypeScript"
+  },
+  "format": "es6"
+}
+
