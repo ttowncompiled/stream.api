@@ -1,2 +1,2 @@
-export * from './core';
+export { Observer } from './core';
 

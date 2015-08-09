@@ -1,16 +1,8 @@
-export interface Disposable {
-  dispose: () => void;
-}
+import { OnComplete, OnError, OnNext } from './types';
 
 export interface Observer<T> {
-  complete: () => void;
-  error: (err: any) => void;
-  next: (item?: T) => void;
+  complete: OnComplete;
+  error: OnError;
+  next: OnNext<T>;
 }
-
-export interface Observable<T> extends Disposable {
-  subscribe: (observer: Observer<T>) => void;
-}
-
-export interface Subject<T> extends Observer<T>, Observable<T> {}
 
