@@ -8,3 +8,5 @@ export interface Observable<T> {
   subscribe: (observer: Observer<T>) => void;
 }
 
+export interface Subject<T> extends Observer<T>, Observable<T> {}
+
