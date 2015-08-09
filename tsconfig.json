@@ -9,6 +9,6 @@
     "removeComments": true
   },
   "files": [
-    "./src/observer.api.ts"
   ]
 }
+
