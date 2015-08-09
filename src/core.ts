@@ -15,5 +15,10 @@ export interface AbstractObservable<T> extends Disposable {
   subscribe: (observer: Observer<T>) => void;
 }
 
+export interface AbstractScheduler {
+  scheduleNotification(cb: () => void): void;
+  scheduleSubscription(cb: () => void): void;
+}
+
 export interface AbstractSubject<T> extends Observer<T>, AbstractObservable<T> {}
 
