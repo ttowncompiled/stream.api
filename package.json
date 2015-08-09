@@ -6,7 +6,9 @@
   "scripts": {
     "build": "npm run clean && tsc",
     "build_watch": "npm run clean && tsc -w",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "debug": "npm run build && mocha dist/test/*",
+    "test": "npm run build && mocha --reporter=nyan dist/test/*"
   },
   "repository": {
     "type": "git",
@@ -22,6 +24,9 @@
   },
   "homepage": "https://github.com/ttowncompiled/observer.api#readme",
   "devDependencies": {
+    "chai": "^3.2.0",
+    "mocha": "^2.2.5",
+    "tsd": "^0.6.3",
     "typescript": "Microsoft/TypeScript"
   },
   "format": "es6"
