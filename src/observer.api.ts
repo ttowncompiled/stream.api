@@ -2,6 +2,7 @@ export {
   AbstractObservable,
   AbstractScheduler,
   AbstractSubject,
+  AbstractSubscriber,
   Disposable,
   Generator,
   Observer,

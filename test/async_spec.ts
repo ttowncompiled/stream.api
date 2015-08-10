@@ -112,6 +112,14 @@ describe('Cold Observable', () => {
       .subscribeOnComplete(() => done());
   });
 
+  it('should pass a reference on complete', done => {
+    let observable: ColdObservable<void> = new ColdObservable<void>(observer => observer.complete());
+    observable.subscribeOnComplete(subscription => {
+      expect(subscription).to.equal(observable);
+      done();
+    });
+  });
+
   it('should fire notifications asynchronously', done => {
     let flag: boolean = false;
     let completeFlag: boolean = false;
@@ -273,7 +281,7 @@ describe('Deferred Observable', () => {
   it('should complete all of its subscribers upon completion', done => {
     let completed: boolean = false;
     let cb: Generator<void> = observer => observer.complete();
-    let subscriber: OnComplete = () => {
+    let subscriber: OnComplete<void> = () => {
       if (completed) done();
       completed = !completed;
     };
@@ -288,6 +296,14 @@ describe('Deferred Observable', () => {
     observable.subscribeOnComplete(() => {
       expect(observable._subscribers).to.deep.equal([]);
       expect(observable.isDisposed).to.be.true;
+      done();
+    });
+  });
+
+  it('should pass a reference on complete', done => {
+    let observable: DeferredObservable<void> = new DeferredObservable<void>(observer => observer.complete());
+    observable.subscribeOnComplete(subscription => {
+      expect(subscription).to.equal(observable);
       done();
     });
   });
@@ -432,7 +448,7 @@ describe('Hot Observable', () => {
   it('should complete all of its subscribers upon completion', done => {
     let completed: boolean = false;
     let cb: Generator<void> = observer => observer.complete();
-    let subscriber: OnComplete = () => {
+    let subscriber: OnComplete<void> = () => {
       if (completed) done();
       completed = !completed;
     };
@@ -447,6 +463,14 @@ describe('Hot Observable', () => {
     observable.subscribeOnComplete(() => {
       expect(observable._subscribers).to.deep.equal([]);
       expect(observable.isDisposed).to.be.true;
+      done();
+    });
+  });
+
+  it('should pass a reference on complete', done => {
+    let observable: HotObservable<void> = new HotObservable<void>(observer => observer.complete());
+    observable.subscribeOnComplete(subscription => {
+      expect(subscription).to.equal(observable);
       done();
     });
   });

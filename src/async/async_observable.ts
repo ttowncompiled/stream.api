@@ -28,7 +28,7 @@ export abstract class Observable<T> implements AbstractObservable<T> {
   
   abstract subscribe(subscriber: Observer<T>): void;
 
-  subscribeOnComplete(complete: OnComplete): void {
+  subscribeOnComplete(complete: OnComplete<T>): void {
     let observer: Observer<T> = {
       complete: complete,
       error: this._throw,
@@ -94,7 +94,7 @@ export class ColdObservable<T> extends Observable<T> {
         }
         this.dispose();
         this._scheduler.schedule(() => {
-          try { subscriber.complete(); }
+          try { subscriber.complete(this); }
           catch(err) { subscriber.error(err); }
         });
       },
@@ -135,7 +135,7 @@ export class DeferredObservable<T> extends Observable<T> {
   
   dispose(): void {
     this._subscribers.forEach(subscriber => setTimeout(() => {
-      try { subscriber.complete(); }
+      try { subscriber.complete(this); }
       catch(err) { subscriber.error(err); }
     }));
     this._subscribers = [];
