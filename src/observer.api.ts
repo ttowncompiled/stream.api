@@ -4,7 +4,8 @@ export {
   AbstractSubject,
   Disposable,
   Generator,
-  Observer
+  Observer,
+  Transform
 } from './core';
 export * from './async';
 
