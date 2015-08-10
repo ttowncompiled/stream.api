@@ -5,6 +5,13 @@ export interface AbstractScheduler {
   tick(): void;
 }
 
+export interface Disposable {
+  dispose: () => void;
+  isDisposed: boolean;
+}
+
+export type Generator<T> = (observer: Observer<T>) => void;
+
 export interface Observer<T> {
   complete: OnComplete;
   error: OnError;
