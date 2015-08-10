@@ -232,7 +232,7 @@ describe('Deferred Observable', () => {
     observable.subscribeOnNext(subscriber);
   });
 
-  it('should emit all notification to each of its subscriptions', done => {
+  it('should emit all notification to each of its subscribers', done => {
     let sequence: number[] = [ 1, 2, 3 ];
     let pending: number[] = [];
     let cb: Generator<number> = observer => sequence.forEach(object => observer.next(object));
@@ -251,7 +251,7 @@ describe('Deferred Observable', () => {
     observable.subscribeOnNext(subscriber);
   });
 
-  it('should emit all errors to each of its subscriptions', done => {
+  it('should emit all errors to each of its subscribers', done => {
     let sequence: number[] = [ 1, 2, 3 ];
     let pending: number[] = [];
     let cb: Generator<number> = observer => sequence.forEach(object => observer.error(object));
@@ -270,7 +270,7 @@ describe('Deferred Observable', () => {
     observable.subscribeOnError(subscriber);
   });
 
-  it('should complete all of its subscriptions upon completion', done => {
+  it('should complete all of its subscribers upon completion', done => {
     let completed: boolean = false;
     let cb: Generator<void> = observer => observer.complete();
     let subscriber: OnComplete = () => {
@@ -282,11 +282,11 @@ describe('Deferred Observable', () => {
     observable.subscribeOnComplete(subscriber);
   });
 
-  it('should dispose of all subscriptions upon completion', done => {
+  it('should dispose of all subscribers upon completion', done => {
     let cb: Generator<void> = observer => observer.complete();
     let observable: DeferredObservable<void> = new DeferredObservable<void>(cb);
     observable.subscribeOnComplete(() => {
-      expect(observable._subscriptions).to.deep.equal([]);
+      expect(observable._subscribers).to.deep.equal([]);
       expect(observable.isDisposed).to.be.true;
       done();
     });
@@ -391,7 +391,7 @@ describe('Hot Observable', () => {
     new HotObservable<void>(observer => done());
   });
 
-  it('should emit all notification to each of its subscriptions', done => {
+  it('should emit all notification to each of its subscribers', done => {
     let sequence: number[] = [ 1, 2, 3 ];
     let pending: number[] = [];
     let cb: Generator<number> = observer => sequence.forEach(object => observer.next(object));
@@ -410,7 +410,7 @@ describe('Hot Observable', () => {
     observable.subscribeOnNext(subscriber);
   });
 
-  it('should emit all errors to each of its subscriptions', done => {
+  it('should emit all errors to each of its subscribers', done => {
     let sequence: number[] = [ 1, 2, 3 ];
     let pending: number[] = [];
     let cb: Generator<number> = observer => sequence.forEach(object => observer.error(object));
@@ -429,7 +429,7 @@ describe('Hot Observable', () => {
     observable.subscribeOnError(subscriber);
   });
 
-  it('should complete all of its subscriptions upon completion', done => {
+  it('should complete all of its subscribers upon completion', done => {
     let completed: boolean = false;
     let cb: Generator<void> = observer => observer.complete();
     let subscriber: OnComplete = () => {
@@ -441,11 +441,11 @@ describe('Hot Observable', () => {
     observable.subscribeOnComplete(subscriber);
   });
 
-  it('should dispose of all subscriptions upon completion', done => {
+  it('should dispose of all subscribers upon completion', done => {
     let cb: Generator<void> = observer => observer.complete();
     let observable: HotObservable<void> = new HotObservable<void>(cb);
     observable.subscribeOnComplete(() => {
-      expect(observable._subscriptions).to.deep.equal([]);
+      expect(observable._subscribers).to.deep.equal([]);
       expect(observable.isDisposed).to.be.true;
       done();
     });

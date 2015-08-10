@@ -126,19 +126,19 @@ export class ColdObservable<T> extends Observable<T> {
 
 export class DeferredObservable<T> extends Observable<T> {
 
-  _subscriptions: Observer<T>[];
+  _subscribers: Observer<T>[];
 
   constructor(private _cb: Generator<T>) { 
     super();
-    this._subscriptions = [];
+    this._subscribers = [];
   }
   
   dispose(): void {
-    this._subscriptions.forEach(subscriber => setTimeout(() => {
+    this._subscribers.forEach(subscriber => setTimeout(() => {
       try { subscriber.complete(); }
       catch(err) { subscriber.error(err); }
     }));
-    this._subscriptions = [];
+    this._subscribers = [];
   }
   
   subscribe(subscriber: Observer<T>): void {
@@ -146,8 +146,8 @@ export class DeferredObservable<T> extends Observable<T> {
       subscriber.error(this._assertNoSubscribe());
       return;
     }
-    this._subscriptions.push(subscriber);
-    if (this._subscriptions.length === 1) this._publish();
+    this._subscribers.push(subscriber);
+    if (this._subscribers.length === 1) this._publish();
   }
   
   _publish(): void {
@@ -160,13 +160,13 @@ export class DeferredObservable<T> extends Observable<T> {
       error: err => {
         if (this.isDisposed) throw this._assertNoError();
         this._scheduler.schedule(() => {
-          this._subscriptions.forEach(subscriber => setTimeout(() => subscriber.error(err)));
+          this._subscribers.forEach(subscriber => setTimeout(() => subscriber.error(err)));
         });
       },
       next: object => {
         if (this.isDisposed) throw this._assertNoNext();
         this._scheduler.schedule(() => {
-          this._subscriptions.forEach(subscriber => setTimeout(() => {
+          this._subscribers.forEach(subscriber => setTimeout(() => {
             try { subscriber.next(object); }
             catch(err) { subscriber.error(err); }
           }));
@@ -193,7 +193,7 @@ export class HotObservable<T> extends DeferredObservable<T> {
       subscriber.error(this._assertNoSubscribe());
       return;
     }
-    this._subscriptions.push(subscriber);
+    this._subscribers.push(subscriber);
   }
   
 }
