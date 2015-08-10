@@ -6,4 +6,5 @@ export {
   Generator,
   Observer
 } from './core';
+export * from './async';
 
