@@ -29,3 +29,5 @@ export interface AbstractSubject<T> extends AbstractObservable<T>, AbstractSubsc
 
 export type Generator<T> = (observer: Observer<T>) => void;
 
+export type Transform<T, R> = (object?: T) => R;
+
