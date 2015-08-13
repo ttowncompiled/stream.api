@@ -1,8 +1,7 @@
-import { AbstractSubject, Observer } from '../core';
-import { Observable } from './observable';
+import {AbstractSubject, Observer} from '../core';
+import {Observable} from './observable';
 
 export class Subject<T> extends Observable<T> implements AbstractSubject<T> {
-
   _disposeUponNoSubscriptions: boolean;
   _subscriptions: Observable<T>[];
 
@@ -25,18 +24,20 @@ export class Subject<T> extends Observable<T> implements AbstractSubject<T> {
   error(err: any): void {
     if (this.isDisposed) this._assertNoError();
     this._scheduler.schedule(() => {
-      this._subscribers.forEach(subscriber => setTimeout(() => subscriber.error(err)));
+      this._subscribers.forEach(subscriber =>
+                                    setTimeout(() => subscriber.error(err)));
     });
   }
 
   next(object?: T): void {
     if (this.isDisposed) this._assertNoNext();
     this._scheduler.schedule(() => {
-      this._subscribers.forEach(subscriber => setTimeout(() => subscriber.next(object)));
+      this._subscribers.forEach(subscriber =>
+                                    setTimeout(() => subscriber.next(object)));
     });
   }
 
-  subscribe(subscriber: Observer<T>): void { 
+  subscribe(subscriber: Observer<T>): void {
     if (this.isDisposed) this._assertNoSubscribe();
     this._subscribers.push(subscriber);
     if (this._subscribers.length === 1) {
@@ -49,15 +50,16 @@ export class Subject<T> extends Observable<T> implements AbstractSubject<T> {
     this._subscriptions.push(subscription);
     if (this._subscribers.length > 0) subscription.subscribe(this);
   }
-  
+
   _assertNoSubscribeTo(): void {
     throw new Error('Called subscribeTo on a Subject that has been disposed.');
   }
-  
+
   _disposeSubject(): void {
     this.isDisposed = true;
     this._scheduler.schedule(() => {
-      this._subscribers.forEach(subscriber => setTimeout(() => subscriber.complete(this)));
+      this._subscribers.forEach(
+          subscriber => setTimeout(() => subscriber.complete(this)));
       this._subscribers = [];
     });
   }
@@ -69,5 +71,4 @@ export class Subject<T> extends Observable<T> implements AbstractSubject<T> {
       this._disposeSubject();
     }
   }
-
 }

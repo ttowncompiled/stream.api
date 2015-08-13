@@ -1,7 +1,6 @@
-import { Callback, OnComplete, OnError, OnNext } from './types';
+import {Callback, OnComplete, OnError, OnNext} from './types';
 
 export type Generator<T> = (observer: Observer<T>) => void;
-
 export type Transform<T, R> = (object?: T) => R;
 
 export interface Disposable {

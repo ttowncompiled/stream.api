@@ -1,8 +1,7 @@
-import { Callback } from '../types';
-import { AbstractScheduler } from '../core';
+import {Callback} from '../types';
+import {AbstractScheduler} from '../core';
 
 export class Scheduler implements AbstractScheduler {
-
   _queue: Callback[];
 
   constructor() { this._queue = []; }
@@ -24,5 +23,4 @@ export class Scheduler implements AbstractScheduler {
       setTimeout(() => this.tick());
     });
   }
-
 }

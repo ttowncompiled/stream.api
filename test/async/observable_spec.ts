@@ -1,7 +1,7 @@
-import { expect } from 'chai';
-import { OnNext } from '../../src/types';
-import { Generator, Observer } from '../../src/core';
-import { Observable } from '../../src/async';
+import {expect} from 'chai';
+import {OnNext} from '../../src/types';
+import {Generator, Observer} from '../../src/core';
+import {Observable} from '../../src/async';
 
 describe('Observable', () => {
 
@@ -19,9 +19,10 @@ describe('Observable', () => {
   });
 
   it('defer should produce a deferred observable', done => {
-    let sequence: number[] = [ 1, 2, 3 ];
+    let sequence: number[] = [1, 2, 3];
     let pending: number[] = [];
-    let cb: Generator<number> = observer => sequence.forEach(object => observer.next(object));
+    let cb: Generator<number> = observer =>
+        sequence.forEach(object => observer.next(object));
     let observable: Observable<number> = Observable.defer<number>(cb);
     let subscriber: OnNext<number> = object => {
       if (pending.length === 0) observable.subscribeOnNext(subscriber);
@@ -32,13 +33,12 @@ describe('Observable', () => {
         expect(pending.indexOf(object)).to.be.above(-1);
         pending.splice(pending.indexOf(object), 1);
       }
-      if (sequence.length === 0 && pending.length === 1) done(); 
+      if (sequence.length === 0 && pending.length === 1) done();
     };
     observable.subscribeOnNext(subscriber);
   });
 
-  it('publish should produce a hot observable', done => {
-    Observable.publish(observer => done());
-  });
+  it('publish should produce a hot observable',
+     done => { Observable.publish(observer => done()); });
 
 });
