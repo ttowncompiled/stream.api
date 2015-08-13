@@ -3,7 +3,7 @@ import { OnComplete, OnNext } from '../../src/types';
 import { Generator, Observer } from '../../src/core';
 import { DeferredObservable } from '../../src/async/observable';
 
-describe.only('Deferred Observable', () => {
+describe('Deferred Observable', () => {
 
   it('should call its generator for the first subscriber', done => {
     let zero: number = 0;
@@ -133,7 +133,7 @@ describe.only('Deferred Observable', () => {
     observable.subscribeOnComplete(() => {
       expect(observable.isDisposed).to.be.true;
       try { observable.subscribeOnComplete(() => {}); }
-      catch(e) { done(); }
+      catch(err) { done(); }
     });
   });
 
