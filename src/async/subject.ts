@@ -13,35 +13,28 @@ export class Subject<T> extends Observable<T> implements AbstractSubject<T> {
   }
 
   complete(subscription?: Observable<T>): void {
-    if (this.isDisposed) {
-      this._sendErrorToAll(this._assertNoComplete());
-      return;
-    }
+    if (this.isDisposed) this._assertNoComplete();
     this._unsubscribeFrom(subscription);
   }
 
   dispose(): void { this._disposeUponNoSubscriptions = true; }
 
   error(err: any): void {
-    err = (this.isDisposed) ? this._assertNoError() : err;
-    this._sendErrorToAll(err);
+    if (this.isDisposed) this._assertNoError();
+    this._scheduler.schedule(() => {
+      this._subscribers.forEach(subscriber => setTimeout(() => subscriber.error(err)));
+    });
   }
 
   next(object?: T): void {
-    if (this.isDisposed) {
-      this._sendErrorToAll(this._assertNoNext());
-      return;
-    }
+    if (this.isDisposed) this._assertNoNext();
     this._scheduler.schedule(() => {
       this._subscribers.forEach(subscriber => setTimeout(() => subscriber.next(object)));
     });
   }
 
   subscribe(subscriber: Observer<T>): void { 
-    if (this.isDisposed) {
-      subscriber.error(this._assertNoSubscribe());
-      return;
-    }
+    if (this.isDisposed) this._assertNoSubscribe();
     this._subscribers.push(subscriber);
     if (this._subscribers.length === 1) {
       this._subscriptions.forEach(subscription => subscription.subscribe(this));
@@ -49,21 +42,13 @@ export class Subject<T> extends Observable<T> implements AbstractSubject<T> {
   }
 
   subscribeTo(subscription: Observable<T>): void {
-    if (this.isDisposed) throw this._assertNoSubscribeTo();
-    if (this._disposeUponNoSubscriptions) return;
+    if (this._disposeUponNoSubscriptions) this._assertNoSubscribeTo();
     this._subscriptions.push(subscription);
     if (this._subscribers.length > 0) subscription.subscribe(this);
   }
   
-  _assertNoSubscribeTo(): Error {
-    return new Error('Called subscribeTo on a Subject that has been disposed.');
-  }
-  
-  _sendErrorToAll(err: any): void {
-    if (this._subscribers)
-    this._scheduler.schedule(() => {
-      this._subscribers.forEach(subscriber => setTimeout(() => subscriber.error(err)));
-    });
+  _assertNoSubscribeTo(): void {
+    throw new Error('Called subscribeTo on a Subject that has been disposed.');
   }
 
   _unsubscribeFrom(subscription: Observable<T>): void {

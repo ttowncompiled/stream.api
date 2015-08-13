@@ -57,20 +57,20 @@ export abstract class Observable<T> implements AbstractObservable<T> {
     this.subscribe(observer);
   }
 
-  _assertNoComplete(): Error {
-    return new Error('An Observable called complete after being disposed.');
+  _assertNoComplete(): void {
+    throw new Error('An Observable called complete after being disposed.');
   }
 
-  _assertNoError(): Error {
-    return new Error('An Observable called error after being disposed.');
+  _assertNoError(): void {
+    throw new Error('An Observable called error after being disposed.');
   }
 
-  _assertNoNext(): Error {
-    return new Error('An Observable called next after being disposed.');
+  _assertNoNext(): void {
+    throw new Error('An Observable called next after being disposed.');
   }
 
-  _assertNoSubscribe(): Error {
-    return new Error('Called subscribe on an Observable that has been disposed.');
+  _assertNoSubscribe(): void {
+    throw new Error('An Observable was subscribed to after being disposed.');
   }
 
   _throw(err: any): void { throw err; }
@@ -89,31 +89,19 @@ export class ColdObservable<T> extends Observable<T> {
   dispose(): void { this.isDisposed = true; }
   
   subscribe(subscriber: Observer<T>): void {
-    if (this.isDisposed) {
-      subscriber.error(this._assertNoSubscribe());
-      return;
-    }
+    if (this.isDisposed) this._assertNoSubscribe();
     let observer: Observer<T> = {
       complete: () => {
-        if (this.isDisposed) {
-          subscriber.error(this._assertNoComplete());
-          return;
-        }
+        if (this.isDisposed) this._assertNoComplete();
         this.dispose();
         this._scheduler.schedule(() => subscriber.complete(this));
       },
       error: err => {
-        if (this.isDisposed) {
-          subscriber.error(this._assertNoError());
-          return;
-        }
+        if (this.isDisposed) this._assertNoError();
         this._scheduler.schedule(() => subscriber.error(err));
       },
       next: object => {
-        if (this.isDisposed) {
-          subscriber.error(this._assertNoNext());
-          return;
-        }
+        if (this.isDisposed) this._assertNoNext();
         this._scheduler.schedule(() => subscriber.next(object));
       }
     };
@@ -145,17 +133,17 @@ export abstract class PublishableObservable<T> extends Observable<T> {
   _publish(): void {
     let observer: Observer<T> = {
       complete: () => {
-        if (this.isDisposed) throw this._assertNoComplete();
+        if (this.isDisposed) this._assertNoComplete();
         this.dispose();
       },
       error: err => {
-        if (this.isDisposed) throw this._assertNoError();
+        if (this.isDisposed) this._assertNoError();
         this._scheduler.schedule(() => {
           this._subscribers.forEach(subscriber => setTimeout(() => subscriber.error(err)));
         });
       },
       next: object => {
-        if (this.isDisposed) throw this._assertNoNext();
+        if (this.isDisposed) this._assertNoNext();
         this._scheduler.schedule(() => {
           this._subscribers.forEach(subscriber => setTimeout(() => subscriber.next(object)));
         });
