@@ -9,8 +9,13 @@
     "removeComments": true
   },
   "files": [
+    "./typings/tsd.d.ts",
     "./src/observer.api.ts",
-    "./test/async_spec.ts"
+    "./test/async/cold_observable_spec.ts",
+    "./test/async/deferred_observable_spec.ts",
+    "./test/async/hot_observable_spec.ts",
+    "./test/async/observable_spec.ts",
+    "./test/async/scheduler_spec.ts",
+    "./test/async/subject_spec.ts"
   ]
 }
-

@@ -17,4 +17,3 @@ If this is interesting, check out
 <a href="https://github.com/Reactive-Extensions/RxJS">RxJs</a>
 or
 <a href="https://github.com/ReactiveX/RxJS">RxJs Next</a>
-
