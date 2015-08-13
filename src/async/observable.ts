@@ -5,11 +5,15 @@ import { Scheduler } from './async_scheduler';
 export abstract class Observable<T> implements AbstractObservable<T> {
 
   isDisposed: boolean;
+  _cb: Generator<T>;
   _scheduler: Scheduler;
+  _subscribers: Observer<T>[];
 
-  constructor() {
+  constructor(cb: Generator<T>) {
     this.isDisposed = false;
+    this._cb = cb;
     this._scheduler = new Scheduler();
+    this._subscribers = [];
   }
 
   static create<E>(cb: Generator<E>): Observable<E> {
@@ -77,7 +81,7 @@ export abstract class Observable<T> implements AbstractObservable<T> {
 
 export class ColdObservable<T> extends Observable<T> {
 
-  constructor(private _cb: Generator<T>) { super(); }
+  constructor(cb: Generator<T>) { super(cb); }
   
   dispose(): void { this.isDisposed = true; }
   
@@ -93,10 +97,7 @@ export class ColdObservable<T> extends Observable<T> {
           return;
         }
         this.dispose();
-        this._scheduler.schedule(() => {
-          try { subscriber.complete(this); }
-          catch(err) { subscriber.error(err); }
-        });
+        this._scheduler.schedule(() => subscriber.complete(this));
       },
       error: err => {
         if (this.isDisposed) {
@@ -110,10 +111,7 @@ export class ColdObservable<T> extends Observable<T> {
           subscriber.error(this._assertNoNext());
           return;
         }
-        this._scheduler.schedule(() => {
-          try { subscriber.next(object); }
-          catch(err) { subscriber.error(err); }
-        });
+        this._scheduler.schedule(() => subscriber.next(object));
       }
     };
     setTimeout(() => {
@@ -124,38 +122,23 @@ export class ColdObservable<T> extends Observable<T> {
   
 }
 
-export class DeferredObservable<T> extends Observable<T> {
-
-  _subscribers: Observer<T>[];
-
-  constructor(private _cb: Generator<T>) { 
-    super();
-    this._subscribers = [];
-  }
+export abstract class PublishableObservable<T> extends Observable<T> {
+  
+  constructor(cb: Generator<T>) { super(cb); }
   
   dispose(): void {
-    this._subscribers.forEach(subscriber => setTimeout(() => {
-      try { subscriber.complete(this); }
-      catch(err) { subscriber.error(err); }
-    }));
-    this._subscribers = [];
-  }
-  
-  subscribe(subscriber: Observer<T>): void {
-    if (this.isDisposed) {
-      subscriber.error(this._assertNoSubscribe());
-      return;
-    }
-    this._subscribers.push(subscriber);
-    if (this._subscribers.length === 1) this._publish();
+    this.isDisposed = true;
+    this._scheduler.schedule(() => {
+      this._subscribers.forEach(subscriber => setTimeout(() => subscriber.complete(this)));
+      this._subscribers = [];
+    });
   }
   
   _publish(): void {
     let observer: Observer<T> = {
       complete: () => {
         if (this.isDisposed) throw this._assertNoComplete();
-        this.isDisposed = true;
-        this._scheduler.schedule(() => this.dispose());
+        this.dispose();
       },
       error: err => {
         if (this.isDisposed) throw this._assertNoError();
@@ -166,10 +149,7 @@ export class DeferredObservable<T> extends Observable<T> {
       next: object => {
         if (this.isDisposed) throw this._assertNoNext();
         this._scheduler.schedule(() => {
-          this._subscribers.forEach(subscriber => setTimeout(() => {
-            try { subscriber.next(object); }
-            catch(err) { subscriber.error(err); }
-          }));
+          this._subscribers.forEach(subscriber => setTimeout(() => subscriber.next(object)));
         });
       }
     };
@@ -178,10 +158,25 @@ export class DeferredObservable<T> extends Observable<T> {
       catch(err) { observer.error(err); }
     });
   }
+  
+}
+
+export class DeferredObservable<T> extends PublishableObservable<T> {
+
+  constructor(cb: Generator<T>) { super(cb); }
+  
+  subscribe(subscriber: Observer<T>): void {
+    if (this.isDisposed) {
+      subscriber.error(this._assertNoSubscribe());
+      return;
+    }
+    this._subscribers.push(subscriber);
+    if (this._subscribers.length === 1) this._publish();
+  }
 
 }
 
-export class HotObservable<T> extends DeferredObservable<T> {
+export class HotObservable<T> extends PublishableObservable<T> {
 
   constructor(cb: Generator<T>) {
     super(cb);
@@ -197,4 +192,3 @@ export class HotObservable<T> extends DeferredObservable<T> {
   }
   
 }
-
