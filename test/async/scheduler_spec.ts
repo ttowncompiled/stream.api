@@ -2,12 +2,12 @@ import { expect } from 'chai';
 import { Scheduler } from '../../src/async';
 
 describe('Scheduler', () => {
-
-  it('should call the subscription if there is no pending subscription', done => {
+  
+  it('should process the next subscription when there is no pending subscription', done => {
     new Scheduler().schedule(() => done());
   });
 
-  it('should not call the subscription until the pending subscription is finished', done => {
+  it('should not process the next subscription until the pending subscription is finished', done => {
     let ticked: boolean = false;
     let scheduler: Scheduler = new Scheduler();
     scheduler.schedule(() => ticked = true);
@@ -17,7 +17,12 @@ describe('Scheduler', () => {
     });
   });
 
-  it('should schedule subscriptions asynchronously', done => {
+  it('should not attempt to process a subscription if there are no scheduled subscriptions', done => {
+    new Scheduler().tick();
+    done();
+  });
+
+  it('should process subscriptions asynchronously', done => {
     let flag: boolean = false;
     new Scheduler().schedule(() => {
       expect(flag).to.be.true;

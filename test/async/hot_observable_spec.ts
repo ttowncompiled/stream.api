@@ -3,7 +3,7 @@ import { OnComplete, OnNext } from '../../src/types';
 import { Generator, Observer } from '../../src/core';
 import { HotObservable } from '../../src/async/observable';
 
-describe.only('Hot Observable', () => {
+describe('Hot Observable', () => {
 
   it('should not wait for a subscriber to call its generator', done => {
     new HotObservable<void>(observer => done());

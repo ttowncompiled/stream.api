@@ -13,6 +13,7 @@ export class Scheduler implements AbstractScheduler {
   }
 
   tick(): void {
+    if (this._queue.length === 0) return;
     this._queue.splice(0, 1);
     if (this._queue.length > 0) this._scheduleSubscription();
   }
