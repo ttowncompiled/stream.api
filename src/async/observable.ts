@@ -163,10 +163,7 @@ export class DeferredObservable<T> extends PublishableObservable<T> {
   constructor(cb: Generator<T>) { super(cb); }
   
   subscribe(subscriber: Observer<T>): void {
-    if (this.isDisposed) {
-      subscriber.error(this._assertNoSubscribe());
-      return;
-    }
+    if (this.isDisposed) this._assertNoSubscribe();
     this._subscribers.push(subscriber);
     if (this._subscribers.length === 1) this._publish();
   }
@@ -181,10 +178,7 @@ export class HotObservable<T> extends PublishableObservable<T> {
   }
   
   subscribe(subscriber: Observer<T>): void { 
-    if (this.isDisposed) {
-      subscriber.error(this._assertNoSubscribe());
-      return;
-    }
+    if (this.isDisposed) this._assertNoSubscribe();
     this._subscribers.push(subscriber);
   }
   

@@ -3,9 +3,9 @@ import { OnComplete, OnNext } from '../../src/types';
 import { Generator, Observer } from '../../src/core';
 import { DeferredObservable } from '../../src/async/observable';
 
-describe('Deferred Observable', () => {
+describe.only('Deferred Observable', () => {
 
-  it('should call its generator on the first subscription', done => {
+  it('should call its generator for the first subscriber', done => {
     let zero: number = 0;
     new DeferredObservable(observer => observer.next(zero))
       .subscribeOnNext(object => {
@@ -14,7 +14,7 @@ describe('Deferred Observable', () => {
       });
   });
 
-  it('should not call its generator for any other subscription', done => {
+  it('should not call its generator for the following subscribers', done => {
     let sequence: number[] = [ 1, 2, 3 ];
     let pending: number[] = [];
     let cb: Generator<number> = observer => sequence.forEach(object => observer.next(object));
@@ -33,7 +33,7 @@ describe('Deferred Observable', () => {
     observable.subscribeOnNext(subscriber);
   });
 
-  it('should emit all notification to each of its subscribers', done => {
+  it('should trigger next notifications for each of its subscribers', done => {
     let sequence: number[] = [ 1, 2, 3 ];
     let pending: number[] = [];
     let cb: Generator<number> = observer => sequence.forEach(object => observer.next(object));
@@ -52,7 +52,7 @@ describe('Deferred Observable', () => {
     observable.subscribeOnNext(subscriber);
   });
 
-  it('should emit all errors to each of its subscribers', done => {
+  it('should trigger error notifications for each of its subscribers', done => {
     let sequence: number[] = [ 1, 2, 3 ];
     let pending: number[] = [];
     let cb: Generator<number> = observer => sequence.forEach(object => observer.error(object));
@@ -71,7 +71,7 @@ describe('Deferred Observable', () => {
     observable.subscribeOnError(subscriber);
   });
 
-  it('should complete all of its subscribers upon completion', done => {
+  it('should trigger complete notifications for each of its subscribers', done => {
     let completed: boolean = false;
     let cb: Generator<void> = observer => observer.complete();
     let subscriber: OnComplete<void> = () => {
@@ -83,25 +83,7 @@ describe('Deferred Observable', () => {
     observable.subscribeOnComplete(subscriber);
   });
 
-  it('should dispose of all subscribers upon completion', done => {
-    let cb: Generator<void> = observer => observer.complete();
-    let observable: DeferredObservable<void> = new DeferredObservable<void>(cb);
-    observable.subscribeOnComplete(() => {
-      expect(observable._subscribers).to.deep.equal([]);
-      expect(observable.isDisposed).to.be.true;
-      done();
-    });
-  });
-
-  it('should pass a reference on complete', done => {
-    let observable: DeferredObservable<void> = new DeferredObservable<void>(observer => observer.complete());
-    observable.subscribeOnComplete(subscription => {
-      expect(subscription).to.equal(observable);
-      done();
-    });
-  });
-
-  it('should fire notifications asynchronously', done => {
+  it('should trigger notifications asynchronously', done => {
     let flag: boolean = false;
     let completeFlag: boolean = false;
     let errorFlag: boolean = false;
@@ -126,19 +108,36 @@ describe('Deferred Observable', () => {
       });
     flag = true;
   });
-
-  it('should throw an error if a completed observable is subscribed to', done => {
+  
+  it('should dispose of its subscribers', done => {
     let cb: Generator<void> = observer => observer.complete();
     let observable: DeferredObservable<void> = new DeferredObservable<void>(cb);
-    let subscriber: Observer<void> = {
-      complete: () => observable.subscribe(null),
-      error: err => done(),
-      next: () => {}
-    };
-    observable.subscribe(subscriber);
+    observable.subscribeOnComplete(() => {
+      expect(observable._subscribers).to.be.empty;
+      expect(observable.isDisposed).to.be.true;
+      done();
+    });
+  });
+  
+  it('should pass its reference on complete', done => {
+    let observable: DeferredObservable<void> = new DeferredObservable<void>(observer => observer.complete());
+    observable.subscribeOnComplete(subscription => {
+      expect(subscription).to.equal(observable);
+      done();
+    });
+  });
+  
+  it('should throw an error if subscribed to after being disposed', done => {
+    let cb: Generator<void> = observer => observer.complete();
+    let observable: DeferredObservable<void> = new DeferredObservable<void>(cb);
+    observable.subscribeOnComplete(() => {
+      expect(observable.isDisposed).to.be.true;
+      try { observable.subscribeOnComplete(() => {}); }
+      catch(e) { done(); }
+    });
   });
 
-  it('should throw an error if a completed observer calls complete', done => {
+  it('should throw an error if its generator calls complete after completing', done => {
     let cb: Generator<void> = observer => {
       observer.complete();
       try { observer.complete(); }
@@ -147,7 +146,7 @@ describe('Deferred Observable', () => {
     new DeferredObservable<void>(cb).subscribeOnComplete(() => {});
   });
 
-  it('should throw an error if a completed observer calls error', done => {
+  it('should throw an error if its generator calls error after completing', done => {
     let cb: Generator<void> = observer => {
       observer.complete();
       try { observer.error(null); }
@@ -156,7 +155,7 @@ describe('Deferred Observable', () => {
     new DeferredObservable<void>(cb).subscribeOnComplete(() => {});
   });
 
-  it('should throw an error if a completed observer calls next', done => {
+  it('should throw an error if its generator calls next after completing', done => {
     let cb: Generator<void> = observer => {
       observer.complete();
       try { observer.next(); }
@@ -165,31 +164,11 @@ describe('Deferred Observable', () => {
     new DeferredObservable<void>(cb).subscribeOnComplete(() => {});
   });
 
-  it('should catch any error thrown inside of a generator', done => {
+  it('should catch any error thrown inside of its generator', done => {
     new DeferredObservable<void>(observer => {
         throw new Error('deferred generator catch test');
       })
       .subscribeOnError(err => done());
   });
-
-  it('should catch any error thrown inside of a complete call', done => {
-    let subscriber: Observer<void> = {
-      complete: () => { throw new Error('deferred complete catch test'); },
-      error: err => done(),
-      next: () => {}
-    };
-    new DeferredObservable<void>(observer => observer.complete())
-      .subscribe(subscriber);
-  });
-
-  it('should catch any error thrown inside of a next call', done => {
-    let subscriber: Observer<void> = {
-      complete: () => {},
-      error: err => done(),
-      next: () => { throw new Error('deferred next catch test'); }
-    };
-    new DeferredObservable<void>(observer => observer.next())
-      .subscribe(subscriber);
-  });
-
+  
 });

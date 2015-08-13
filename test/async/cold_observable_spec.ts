@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { Generator, Observer } from '../../src/core';
 import { ColdObservable } from '../../src/async/observable';
 
-describe.only('Cold Observable', () => {
+describe('Cold Observable', () => {
 
   it('should call its generator for each new subscriber', done => {
     let zero: number = 0;
@@ -80,6 +80,7 @@ describe.only('Cold Observable', () => {
     let cb: Generator<void> = observer => observer.complete();
     let observable: ColdObservable<void> = new ColdObservable<void>(cb);
     observable.dispose();
+    expect(observable.isDisposed).to.be.true;
     try { observable.subscribe(null); }
     catch(err) { done(); }
   });
