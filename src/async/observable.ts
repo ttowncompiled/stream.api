@@ -90,18 +90,19 @@ export class ColdObservable<T> extends Observable<T> {
   
   subscribe(subscriber: Observer<T>): void {
     if (this.isDisposed) this._assertNoSubscribe();
+    var observerCompleted: boolean = false;
     let observer: Observer<T> = {
       complete: () => {
-        if (this.isDisposed) this._assertNoComplete();
-        this.dispose();
+        if (observerCompleted) this._assertNoComplete();
+        observerCompleted = true;
         this._scheduler.schedule(() => subscriber.complete(this));
       },
       error: err => {
-        if (this.isDisposed) this._assertNoError();
+        if (observerCompleted) this._assertNoError();
         this._scheduler.schedule(() => subscriber.error(err));
       },
       next: object => {
-        if (this.isDisposed) this._assertNoNext();
+        if (observerCompleted) this._assertNoNext();
         this._scheduler.schedule(() => subscriber.next(object));
       }
     };
