@@ -1,6 +1,6 @@
 import { OnComplete, OnError, OnNext } from '../types';
 import { AbstractObservable, Generator, Observer } from '../core';
-import { Scheduler } from './async_scheduler';
+import { Scheduler } from './scheduler';
 
 export abstract class Observable<T> implements AbstractObservable<T> {
 

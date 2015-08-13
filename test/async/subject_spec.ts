@@ -58,7 +58,7 @@ describe('Subject', () => {
 
   it('should be disposed when all of its subscriptions complete', done => {
     let cb: Generator<void> = observer => observer.complete();
-    let observable: ColdObservable<void> = new ColdObservable<void>(cb);
+    let observable: Observable<void> = Observable.create<void>(cb);
     let subject: Subject<void> = new Subject<void>();
     subject.subscribeTo(observable);
     subject.subscribeOnComplete(() => {
@@ -77,7 +77,7 @@ describe('Subject', () => {
       observer.error(null);
       observer.complete();
     };
-    let observable: ColdObservable<void> = new ColdObservable<void>(cb);
+    let observable: Observable<void> = Observable.create<void>(cb);
     let subject: Subject<void> = new Subject<void>();
     subject.subscribeTo(observable);
     let subscriber: Observer<void> = {
@@ -90,7 +90,7 @@ describe('Subject', () => {
 
   it('should lazily subscribe', done => {
     let cb: Generator<void> = observer => done(new Error('cold generator was called'));
-    let observable: ColdObservable<void> = new ColdObservable<void>(cb);
+    let observable: Observable<void> = Observable.create<void>(cb);
     new Subject<void>().subscribeTo(observable);
     done();
   });
@@ -99,7 +99,7 @@ describe('Subject', () => {
     let zero: number = 0;
     let flag: boolean = false;
     let cb: Generator<number> = observer => observer.next(zero);
-    let observable: ColdObservable<number> = new ColdObservable<number>(cb);
+    let observable: Observable<number> = Observable.create<number>(cb);
     let subject: Subject<number> = new Subject<number>();
     subject.subscribeTo(observable);
     subject.subscribeTo(observable);
