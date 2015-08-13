@@ -17,7 +17,10 @@ export class Subject<T> extends Observable<T> implements AbstractSubject<T> {
     this._unsubscribeFrom(subscription);
   }
 
-  dispose(): void { this._disposeUponNoSubscriptions = true; }
+  dispose(): void {
+    this._disposeUponNoSubscriptions = true;
+    if (this._subscriptions.length === 0) this._disposeSubject();
+  }
 
   error(err: any): void {
     if (this.isDisposed) this._assertNoError();
@@ -50,18 +53,21 @@ export class Subject<T> extends Observable<T> implements AbstractSubject<T> {
   _assertNoSubscribeTo(): void {
     throw new Error('Called subscribeTo on a Subject that has been disposed.');
   }
+  
+  _disposeSubject(): void {
+    this.isDisposed = true;
+    this._scheduler.schedule(() => {
+      this._subscribers.forEach(subscriber => setTimeout(() => subscriber.complete(this)));
+      this._subscribers = [];
+    });
+  }
 
   _unsubscribeFrom(subscription: Observable<T>): void {
     let idx: number = this._subscriptions.indexOf(subscription);
     if (idx > -1) this._subscriptions.splice(idx, 1);
     if (this._subscriptions.length === 0 && this._disposeUponNoSubscriptions) {
-      this.isDisposed = true;
-      this._scheduler.schedule(() => {
-        this._subscribers.forEach(subscriber => setTimeout(() => subscriber.complete()));
-        this._subscribers = [];
-      });
+      this._disposeSubject();
     }
   }
 
 }
-

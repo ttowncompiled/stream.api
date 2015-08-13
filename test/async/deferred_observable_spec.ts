@@ -32,24 +32,17 @@ describe('Deferred Observable', () => {
     };
     observable.subscribeOnNext(subscriber);
   });
-
-  it('should trigger next notifications for each of its subscribers', done => {
-    let sequence: number[] = [ 1, 2, 3 ];
-    let pending: number[] = [];
-    let cb: Generator<number> = observer => sequence.forEach(object => observer.next(object));
-    let subscriber: OnNext<number> = object => {
-      if (sequence.indexOf(object) > -1) {
-        sequence.splice(sequence.indexOf(object), 1);
-        pending.push(object);
-      } else {
-        expect(pending.indexOf(object)).to.be.above(-1);
-        pending.splice(pending.indexOf(object), 1);
-      }
-      if (sequence.length === 0 && pending.length === 0) done(); 
+  
+  it('should trigger complete notifications for each of its subscribers', done => {
+    let completed: boolean = false;
+    let cb: Generator<void> = observer => observer.complete();
+    let subscriber: OnComplete<void> = () => {
+      if (completed) done();
+      completed = !completed;
     };
-    let observable: DeferredObservable<number> = new DeferredObservable<number>(cb);
-    observable.subscribeOnNext(subscriber);
-    observable.subscribeOnNext(subscriber);
+    let observable: DeferredObservable<void> = new DeferredObservable<void>(cb);
+    observable.subscribeOnComplete(subscriber);
+    observable.subscribeOnComplete(subscriber);
   });
 
   it('should trigger error notifications for each of its subscribers', done => {
@@ -71,16 +64,23 @@ describe('Deferred Observable', () => {
     observable.subscribeOnError(subscriber);
   });
 
-  it('should trigger complete notifications for each of its subscribers', done => {
-    let completed: boolean = false;
-    let cb: Generator<void> = observer => observer.complete();
-    let subscriber: OnComplete<void> = () => {
-      if (completed) done();
-      completed = !completed;
+  it('should trigger next notifications for each of its subscribers', done => {
+    let sequence: number[] = [ 1, 2, 3 ];
+    let pending: number[] = [];
+    let cb: Generator<number> = observer => sequence.forEach(object => observer.next(object));
+    let subscriber: OnNext<number> = object => {
+      if (sequence.indexOf(object) > -1) {
+        sequence.splice(sequence.indexOf(object), 1);
+        pending.push(object);
+      } else {
+        expect(pending.indexOf(object)).to.be.above(-1);
+        pending.splice(pending.indexOf(object), 1);
+      }
+      if (sequence.length === 0 && pending.length === 0) done(); 
     };
-    let observable: DeferredObservable<void> = new DeferredObservable<void>(cb);
-    observable.subscribeOnComplete(subscriber);
-    observable.subscribeOnComplete(subscriber);
+    let observable: DeferredObservable<number> = new DeferredObservable<number>(cb);
+    observable.subscribeOnNext(subscriber);
+    observable.subscribeOnNext(subscriber);
   });
 
   it('should trigger notifications asynchronously', done => {
@@ -131,7 +131,6 @@ describe('Deferred Observable', () => {
     let cb: Generator<void> = observer => observer.complete();
     let observable: DeferredObservable<void> = new DeferredObservable<void>(cb);
     observable.subscribeOnComplete(() => {
-      expect(observable.isDisposed).to.be.true;
       try { observable.subscribeOnComplete(() => {}); }
       catch(err) { done(); }
     });

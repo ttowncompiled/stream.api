@@ -16,15 +16,10 @@ describe('Cold Observable', () => {
       });
     });
   });
-
-  it('should trigger next notifications', done => {
-    let sequence: number[] = [ 1, 2, 3 ];
-    new ColdObservable<number>(observer => sequence.forEach(object => observer.next(object)))
-      .subscribeOnNext(object => {
-        expect(sequence.indexOf(object)).to.be.above(-1);
-        sequence.splice(sequence.indexOf(object), 1);
-        if (sequence.length === 0) done();
-      });
+  
+  it('should trigger complete notifications', done => {
+    new ColdObservable<void>(observer => observer.complete())
+      .subscribeOnComplete(() => done());
   });
 
   it('should trigger error notifications', done => {
@@ -37,9 +32,14 @@ describe('Cold Observable', () => {
       });
   });
 
-  it('should trigger complete notifications', done => {
-    new ColdObservable<void>(observer => observer.complete())
-      .subscribeOnComplete(() => done());
+  it('should trigger next notifications', done => {
+    let sequence: number[] = [ 1, 2, 3 ];
+    new ColdObservable<number>(observer => sequence.forEach(object => observer.next(object)))
+      .subscribeOnNext(object => {
+        expect(sequence.indexOf(object)).to.be.above(-1);
+        sequence.splice(sequence.indexOf(object), 1);
+        if (sequence.length === 0) done();
+      });
   });
 
   it('should pass its reference on complete', done => {

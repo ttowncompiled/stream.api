@@ -8,24 +8,17 @@ describe('Hot Observable', () => {
   it('should not wait for a subscriber to call its generator', done => {
     new HotObservable<void>(observer => done());
   });
-
-  it('should trigger next notifications for each of its subscribers', done => {
-    let sequence: number[] = [ 1, 2, 3 ];
-    let pending: number[] = [];
-    let cb: Generator<number> = observer => sequence.forEach(object => observer.next(object));
-    let subscriber: OnNext<number> = object => {
-      if (sequence.indexOf(object) > -1) {
-        sequence.splice(sequence.indexOf(object), 1);
-        pending.push(object);
-      } else {
-        expect(pending.indexOf(object)).to.be.above(-1);
-        pending.splice(pending.indexOf(object), 1);
-      }
-      if (sequence.length === 0 && pending.length === 0) done(); 
+  
+  it('should trigger complete notifications for each of its subscribers', done => {
+    let completed: boolean = false;
+    let cb: Generator<void> = observer => observer.complete();
+    let subscriber: OnComplete<void> = () => {
+      if (completed) done();
+      completed = !completed;
     };
-    let observable: HotObservable<number> = new HotObservable<number>(cb);
-    observable.subscribeOnNext(subscriber);
-    observable.subscribeOnNext(subscriber);
+    let observable: HotObservable<void> = new HotObservable<void>(cb);
+    observable.subscribeOnComplete(subscriber);
+    observable.subscribeOnComplete(subscriber);
   });
 
   it('should trigger error notifications for each of its subscribers', done => {
@@ -47,16 +40,23 @@ describe('Hot Observable', () => {
     observable.subscribeOnError(subscriber);
   });
 
-  it('should trigger complete notifications for each of its subscribers', done => {
-    let completed: boolean = false;
-    let cb: Generator<void> = observer => observer.complete();
-    let subscriber: OnComplete<void> = () => {
-      if (completed) done();
-      completed = !completed;
+  it('should trigger next notifications for each of its subscribers', done => {
+    let sequence: number[] = [ 1, 2, 3 ];
+    let pending: number[] = [];
+    let cb: Generator<number> = observer => sequence.forEach(object => observer.next(object));
+    let subscriber: OnNext<number> = object => {
+      if (sequence.indexOf(object) > -1) {
+        sequence.splice(sequence.indexOf(object), 1);
+        pending.push(object);
+      } else {
+        expect(pending.indexOf(object)).to.be.above(-1);
+        pending.splice(pending.indexOf(object), 1);
+      }
+      if (sequence.length === 0 && pending.length === 0) done(); 
     };
-    let observable: HotObservable<void> = new HotObservable<void>(cb);
-    observable.subscribeOnComplete(subscriber);
-    observable.subscribeOnComplete(subscriber);
+    let observable: HotObservable<number> = new HotObservable<number>(cb);
+    observable.subscribeOnNext(subscriber);
+    observable.subscribeOnNext(subscriber);
   });
   
   it('should trigger notifications asynchronously', done => {
@@ -107,7 +107,6 @@ describe('Hot Observable', () => {
     let cb: Generator<void> = observer => observer.complete();
     let observable: HotObservable<void> = new HotObservable<void>(cb);
     observable.subscribeOnComplete(() => {
-      expect(observable.isDisposed).to.be.true;
       try { observable.subscribeOnComplete(() => {}); }
       catch(err) { done(); }
     });
