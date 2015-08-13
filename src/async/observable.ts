@@ -5,13 +5,11 @@ import { Scheduler } from './async_scheduler';
 export abstract class Observable<T> implements AbstractObservable<T> {
 
   isDisposed: boolean;
-  _cb: Generator<T>;
   _scheduler: Scheduler;
   _subscribers: Observer<T>[];
 
-  constructor(cb: Generator<T>) {
+  constructor() {
     this.isDisposed = false;
-    this._cb = cb;
     this._scheduler = new Scheduler();
     this._subscribers = [];
   }
@@ -60,19 +58,19 @@ export abstract class Observable<T> implements AbstractObservable<T> {
   }
 
   _assertNoComplete(): Error {
-    return new Error('An observer called complete after it already completed.');
+    return new Error('An Observable called complete after being disposed.');
   }
 
   _assertNoError(): Error {
-    return new Error('An observer called error after it completed.');
+    return new Error('An Observable called error after being disposed.');
   }
 
   _assertNoNext(): Error {
-    return new Error('An observer called next after it completed.');
+    return new Error('An Observable called next after being disposed.');
   }
 
   _assertNoSubscribe(): Error {
-    return new Error('Called subscribe on an observable that already completed.');
+    return new Error('Called subscribe on an Observable that has been disposed.');
   }
 
   _throw(err: any): void { throw err; }
@@ -81,7 +79,12 @@ export abstract class Observable<T> implements AbstractObservable<T> {
 
 export class ColdObservable<T> extends Observable<T> {
 
-  constructor(cb: Generator<T>) { super(cb); }
+  _cb: Generator<T>;
+  
+  constructor(cb: Generator<T>) {
+    super();
+    this._cb = cb;
+  }
   
   dispose(): void { this.isDisposed = true; }
   
@@ -124,7 +127,12 @@ export class ColdObservable<T> extends Observable<T> {
 
 export abstract class PublishableObservable<T> extends Observable<T> {
   
-  constructor(cb: Generator<T>) { super(cb); }
+  _cb: Generator<T>;
+  
+  constructor(cb: Generator<T>) {
+    super();
+    this._cb = cb;
+  }
   
   dispose(): void {
     this.isDisposed = true;
