@@ -3,15 +3,14 @@ import {AbstractObservable, Generator, Observer} from '../core';
 import {Scheduler} from './scheduler';
 
 export abstract class Observable<T> implements AbstractObservable<T> {
+
   isDisposed: boolean;
   _scheduler: Scheduler;
   _subscribers: Observer<T>[];
 
-  constructor() {
-    this.isDisposed = false;
-    this._scheduler = new Scheduler();
-    this._subscribers = [];
-  }
+  abstract dispose(): void;
+
+  abstract subscribe(subscriber: Observer<T>): void;
 
   static create<E>(cb: Generator<E>): Observable<E> {
     return new ColdObservable<E>(cb);
@@ -25,25 +24,36 @@ export abstract class Observable<T> implements AbstractObservable<T> {
     return new HotObservable<E>(cb);
   }
 
-  abstract dispose(): void;
-
-  abstract subscribe(subscriber: Observer<T>): void;
+  constructor() {
+    this.isDisposed = false;
+    this._scheduler = new Scheduler();
+    this._subscribers = [];
+  }
 
   subscribeOnComplete(complete: OnComplete<T>): void {
-    let observer:
-        Observer<T> = {complete: complete, error: this._throw, next: () => {}};
+    let observer: Observer<T> = {
+      complete: complete,
+      error: this._throw,
+      next: () => {}
+    };
     this.subscribe(observer);
   }
 
   subscribeOnError(error: OnError): void {
-    let observer:
-        Observer<T> = {complete: () => {}, error: error, next: () => {}};
+    let observer: Observer<T> = {
+      complete: () => {},
+      error: error,
+      next: () => {}
+    };
     this.subscribe(observer);
   }
 
   subscribeOnNext(next: OnNext<T>): void {
-    let observer:
-        Observer<T> = {complete: () => {}, error: this._throw, next: next};
+    let observer: Observer<T> = {
+      complete: () => {},
+      error: this._throw,
+      next: next
+    };
     this.subscribe(observer);
   }
 
@@ -63,10 +73,13 @@ export abstract class Observable<T> implements AbstractObservable<T> {
     throw new Error('An Observable was subscribed to after being disposed.');
   }
 
-  _throw(err: any): void { throw err; }
+  _throw(err: any): void {
+    throw err;
+  }
 }
 
 export class ColdObservable<T> extends Observable<T> {
+
   _cb: Generator<T>;
 
   constructor(cb: Generator<T>) {
@@ -74,24 +87,40 @@ export class ColdObservable<T> extends Observable<T> {
     this._cb = cb;
   }
 
-  dispose(): void { this.isDisposed = true; }
+  dispose(): void {
+    this.isDisposed = true;
+  }
 
   subscribe(subscriber: Observer<T>): void {
-    if (this.isDisposed) this._assertNoSubscribe();
-    var observerCompleted: boolean = false;
+    if (this.isDisposed) {
+      this._assertNoSubscribe();
+    }
+    let observerCompleted: boolean = false;
     let observer: Observer<T> = {
       complete: () => {
-        if (observerCompleted) this._assertNoComplete();
+        if (observerCompleted) {
+          this._assertNoComplete();
+        }
         observerCompleted = true;
-        this._scheduler.schedule(() => subscriber.complete(this));
+        this._scheduler.schedule(() => {
+          subscriber.complete(this);
+        });
       },
       error: err => {
-        if (observerCompleted) this._assertNoError();
-        this._scheduler.schedule(() => subscriber.error(err));
+        if (observerCompleted) {
+          this._assertNoError();
+        }
+        this._scheduler.schedule(() => {
+          subscriber.error(err);
+        });
       },
       next: object => {
-        if (observerCompleted) this._assertNoNext();
-        this._scheduler.schedule(() => subscriber.next(object));
+        if (observerCompleted) {
+          this._assertNoNext();
+        }
+        this._scheduler.schedule(() => {
+          subscriber.next(object);
+        });
       }
     };
     setTimeout(() => {
@@ -105,6 +134,7 @@ export class ColdObservable<T> extends Observable<T> {
 }
 
 export abstract class PublishableObservable<T> extends Observable<T> {
+
   _cb: Generator<T>;
 
   constructor(cb: Generator<T>) {
@@ -115,8 +145,11 @@ export abstract class PublishableObservable<T> extends Observable<T> {
   dispose(): void {
     this.isDisposed = true;
     this._scheduler.schedule(() => {
-      this._subscribers.forEach(
-          subscriber => setTimeout(() => subscriber.complete(this)));
+      this._subscribers.forEach(subscriber => {
+        setTimeout(() => {
+          subscriber.complete(this);
+        });
+      });
       this._subscribers = [];
     });
   }
@@ -124,21 +157,33 @@ export abstract class PublishableObservable<T> extends Observable<T> {
   _publish(): void {
     let observer: Observer<T> = {
       complete: () => {
-        if (this.isDisposed) this._assertNoComplete();
+        if (this.isDisposed) {
+          this._assertNoComplete();
+        }
         this.dispose();
       },
       error: err => {
-        if (this.isDisposed) this._assertNoError();
+        if (this.isDisposed) {
+          this._assertNoError();
+        }
         this._scheduler.schedule(() => {
-          this._subscribers.forEach(
-              subscriber => setTimeout(() => subscriber.error(err)));
+          this._subscribers.forEach(subscriber => {
+            setTimeout(() => {
+              subscriber.error(err);
+            });
+          });
         });
       },
       next: object => {
-        if (this.isDisposed) this._assertNoNext();
+        if (this.isDisposed) {
+          this._assertNoNext();
+        }
         this._scheduler.schedule(() => {
-          this._subscribers.forEach(
-              subscriber => setTimeout(() => subscriber.next(object)));
+          this._subscribers.forEach(subscriber => {
+            setTimeout(() => {
+              subscriber.next(object);
+            });
+          });
         });
       }
     };
@@ -156,9 +201,13 @@ export class DeferredObservable<T> extends PublishableObservable<T> {
   constructor(cb: Generator<T>) { super(cb); }
 
   subscribe(subscriber: Observer<T>): void {
-    if (this.isDisposed) this._assertNoSubscribe();
+    if (this.isDisposed) {
+      this._assertNoSubscribe();
+    }
     this._subscribers.push(subscriber);
-    if (this._subscribers.length === 1) this._publish();
+    if (this._subscribers.length === 1) {
+      this._publish();
+    }
   }
 }
 
@@ -169,7 +218,9 @@ export class HotObservable<T> extends PublishableObservable<T> {
   }
 
   subscribe(subscriber: Observer<T>): void {
-    if (this.isDisposed) this._assertNoSubscribe();
+    if (this.isDisposed) {
+      this._assertNoSubscribe();
+    }
     this._subscribers.push(subscriber);
   }
 }

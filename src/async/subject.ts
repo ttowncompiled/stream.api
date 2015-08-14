@@ -2,6 +2,7 @@ import {AbstractSubject, Observer} from '../core';
 import {Observable} from './observable';
 
 export class Subject<T> extends Observable<T> implements AbstractSubject<T> {
+
   _disposeUponNoSubscriptions: boolean;
   _subscriptions: Observable<T>[];
 
@@ -12,43 +13,65 @@ export class Subject<T> extends Observable<T> implements AbstractSubject<T> {
   }
 
   complete(subscription?: Observable<T>): void {
-    if (this.isDisposed) this._assertNoComplete();
+    if (this.isDisposed) {
+      this._assertNoComplete();
+    }
     this._unsubscribeFrom(subscription);
   }
 
   dispose(): void {
     this._disposeUponNoSubscriptions = true;
-    if (this._subscriptions.length === 0) this._disposeSubject();
+    if (this._subscriptions.length === 0) {
+      this._disposeSubject();
+    }
   }
 
   error(err: any): void {
-    if (this.isDisposed) this._assertNoError();
+    if (this.isDisposed) {
+      this._assertNoError();
+    }
     this._scheduler.schedule(() => {
-      this._subscribers.forEach(subscriber =>
-                                    setTimeout(() => subscriber.error(err)));
+      this._subscribers.forEach(subscriber => {
+        setTimeout(() => {
+          subscriber.error(err);
+        });
+      });
     });
   }
 
   next(object?: T): void {
-    if (this.isDisposed) this._assertNoNext();
+    if (this.isDisposed) {
+      this._assertNoNext();
+    }
     this._scheduler.schedule(() => {
-      this._subscribers.forEach(subscriber =>
-                                    setTimeout(() => subscriber.next(object)));
+      this._subscribers.forEach(subscriber => {
+        setTimeout(() => {
+          subscriber.next(object);
+        });
+      });
     });
   }
 
   subscribe(subscriber: Observer<T>): void {
-    if (this.isDisposed) this._assertNoSubscribe();
+    if (this.isDisposed) {
+      this._assertNoSubscribe();
+    }
     this._subscribers.push(subscriber);
     if (this._subscribers.length === 1) {
-      this._subscriptions.forEach(subscription => subscription.subscribe(this));
+      this._subscriptions.forEach(subscription => {
+        subscription.subscribe(this);
+      });
     }
   }
 
   subscribeTo(subscription: Observable<T>): void {
-    if (this._disposeUponNoSubscriptions) this._assertNoSubscribeTo();
+    if (this._disposeUponNoSubscriptions) {
+      this._assertNoSubscribeTo();
+    }
     this._subscriptions.push(subscription);
-    if (this._subscribers.length > 0) subscription.subscribe(this);
+    if (this._subscribers.length > 0) {
+      subscription.subscribe(this);
+    }
   }
 
   _assertNoSubscribeTo(): void {
@@ -58,15 +81,20 @@ export class Subject<T> extends Observable<T> implements AbstractSubject<T> {
   _disposeSubject(): void {
     this.isDisposed = true;
     this._scheduler.schedule(() => {
-      this._subscribers.forEach(
-          subscriber => setTimeout(() => subscriber.complete(this)));
+      this._subscribers.forEach(subscriber => {
+        setTimeout(() => {
+          subscriber.complete(this);
+        });
+      });
       this._subscribers = [];
     });
   }
 
   _unsubscribeFrom(subscription: Observable<T>): void {
     let idx: number = this._subscriptions.indexOf(subscription);
-    if (idx > -1) this._subscriptions.splice(idx, 1);
+    if (idx > -1) {
+      this._subscriptions.splice(idx, 1);
+    }
     if (this._subscriptions.length === 0 && this._disposeUponNoSubscriptions) {
       this._disposeSubject();
     }
