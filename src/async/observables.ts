@@ -322,15 +322,17 @@ export class Subject<T> extends BaseSubject<T, T> {
   }
 }
 
-export class MapSubject<T, R> extends BaseSubject<T, R> {
+export abstract class TransformSubject<T, R> extends BaseSubject<T, R> {
 
-  _mapping: Transform<T, R>;
+  _transform: Transform<T, R>;
 
-  constructor(subscription: Observable<T>, mapping: Transform<T, R>) {
+  abstract _compose(subscriber: Observer<R>, object: T): void;
+
+  constructor(subscription: Observable<T>, transform: Transform<T, R>) {
     super();
     this.subscribeTo(subscription);
     this._disposeUponNoSubscriptions = true;
-    this._mapping = mapping;
+    this._transform = transform;
   }
 
   next(object?: T): void {
@@ -339,10 +341,21 @@ export class MapSubject<T, R> extends BaseSubject<T, R> {
     }
     this._scheduler.schedule<R>(this._subscribers, subscriber => {
       try {
-        subscriber.next(this._mapping(object));
+        this._compose(subscriber, object);
       } catch (err) {
         subscriber.error(err);
       }
     });
+  }
+}
+
+export class MapSubject<T, R> extends TransformSubject<T, R> {
+
+  constructor(subscription: Observable<T>, transform: Transform<T, R>) {
+    super(subscription, transform);
+  }
+
+  _compose(subscriber: Observer<R>, object: T): void {
+    subscriber.next(this._transform(object));
   }
 }
