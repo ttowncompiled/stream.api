@@ -8,5 +8,6 @@ export type OnNext<T> = (object?: T) => void;
 
 export interface Notification {
   cb: Notify<any>;
+  notified: Function;
   subscribers: Observer<any>[];
 }

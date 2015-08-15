@@ -154,9 +154,11 @@ describe('Deferred Observable', () => {
     let cb: Generator<void> = observer => observer.complete();
     let observable: DeferredObservable<void> = new DeferredObservable<void>(cb);
     observable.subscribeOnComplete(() => {
-      expect(observable._subscribers).to.be.empty;
       expect(observable.isDisposed).to.be.true;
-      done();
+      observable._scheduler.schedule<void>([null], () => {
+        expect(observable._subscribers).to.be.empty;
+        done();
+      });
     });
   });
 

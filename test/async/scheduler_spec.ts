@@ -6,7 +6,7 @@ describe('Scheduler', () => {
   it('should process the next subscription '
         + 'when there is no pending subscription',
      done => {
-       new Scheduler().schedule([null], () => {
+       new Scheduler().schedule<void>([null], () => {
          done();
        });
      });
@@ -16,10 +16,10 @@ describe('Scheduler', () => {
      done => {
        let ticked: boolean = false;
        let scheduler: Scheduler = new Scheduler();
-       scheduler.schedule([null], () => {
+       scheduler.schedule<void>([null], () => {
          ticked = true;
        });
-       scheduler.schedule([null], () => {
+       scheduler.schedule<void>([null], () => {
          expect(ticked).to.be.true;
          done();
        });
@@ -34,7 +34,7 @@ describe('Scheduler', () => {
 
   it('should process subscriptions asynchronously', done => {
     let flag: boolean = false;
-    new Scheduler().schedule([null], () => {
+    new Scheduler().schedule<void>([null], () => {
       expect(flag).to.be.true;
       done();
     });
