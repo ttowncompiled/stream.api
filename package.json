@@ -9,6 +9,7 @@
     "clean": "rm -rf dist",
     "debug": "mocha -w dist/test/*",
     "linter": "tslint src/**/*.ts test/**/*.ts",
+    "pre-submit": "npm run linter && npm run test",
     "test": "npm run build && mocha --reporter=nyan dist/test/*"
   },
   "repository": {
