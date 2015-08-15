@@ -45,6 +45,22 @@ describe('Observable', () => {
     observable.subscribeOnNext(subscriber);
   });
 
+  it('empty should produce a cold observable that only completes', done => {
+    let subscriber: Observer<void> = {
+      complete: () => {
+        done();
+      },
+      error: err => {
+        done(new Error('empty observable should not emit error'));
+      },
+      next: () => {
+        done(new Error('empty observable should not emit object'));
+      }
+    };
+    Observable.empty<void>()
+      .subscribe(subscriber);
+  });
+
   it('from should produce a cold observable that generates the sequence',
      done => {
        let sequence: number[] = [1, 2, 3];
