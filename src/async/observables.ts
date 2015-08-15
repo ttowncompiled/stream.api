@@ -25,6 +25,15 @@ export abstract class Observable<T> implements AbstractObservable<T> {
     return new DeferredObservable<E>(cb);
   }
 
+  static from<E>(sequence: E[]): Observable<E> {
+    return new ColdObservable<E>(observer => {
+      for (let object of sequence) {
+        observer.next(object);
+      }
+      observer.complete();
+    });
+  }
+
   static publish<E>(cb: Generator<E>): Observable<E> {
     return new HotObservable<E>(cb);
   }

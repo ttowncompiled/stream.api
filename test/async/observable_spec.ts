@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 import {OnNext} from '../../src/types';
-import {Generator} from '../../src/core';
+import {Generator, Observer} from '../../src/core';
 import {Observable} from '../../src/async';
 
 describe('Observable', () => {
@@ -43,6 +43,36 @@ describe('Observable', () => {
       }
     };
     observable.subscribeOnNext(subscriber);
+  });
+
+  it('from should produce a cold observable that generates the sequence',
+     done => {
+       let sequence: number[] = [1, 2, 3];
+       Observable.from<number>(sequence)
+         .subscribeOnNext(object => {
+           expect(sequence.indexOf(object)).to.be.above(-1);
+           sequence.splice(sequence.indexOf(object), 1);
+           if (sequence.length === 0) {
+             done();
+           }
+         });
+     });
+
+  it('from should complete after generating the sequence', done => {
+    let sequence: number[] = [1, 2, 3];
+    let count: number = 0;
+    let subscriber: Observer<number> = {
+      complete: () => {
+        expect(count).to.equal(sequence.length);
+        done();
+      },
+      error: err => {},
+      next: () => {
+        count++;
+      }
+    };
+    Observable.from<number>(sequence)
+      .subscribe(subscriber);
   });
 
   it('publish should produce a hot observable', done => {
