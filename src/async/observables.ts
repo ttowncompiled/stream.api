@@ -1,5 +1,10 @@
 import {OnComplete, OnError, OnNext} from '../types';
-import {AbstractObservable, AbstractSubject, Generator, Observer} from '../core';
+import {
+  AbstractObservable,
+  AbstractSubject,
+  Generator,
+  Observer,
+  Transform} from '../core';
 import {Scheduler} from './scheduler';
 
 export abstract class Observable<T> implements AbstractObservable<T> {
@@ -28,6 +33,10 @@ export abstract class Observable<T> implements AbstractObservable<T> {
     this.isDisposed = false;
     this._scheduler = new Scheduler();
     this._subscribers = [];
+  }
+
+  map<R>(mapping: Transform<T, R>): Observable<R> {
+    return new MapSubject<T, R>(this, mapping);
   }
 
   subscribeOnComplete(complete: OnComplete<T>): void {
@@ -309,6 +318,27 @@ export class Subject<T> extends BaseSubject<T, T> {
     }
     this._scheduler.schedule<T>(this._subscribers, subscriber => {
       subscriber.next(object);
+    });
+  }
+}
+
+export class MapSubject<T, R> extends BaseSubject<T, R> {
+
+  _mapping: Transform<T, R>;
+
+  constructor(subscription: Observable<T>, mapping: Transform<T, R>) {
+    super();
+    this.subscribeTo(subscription);
+    this._disposeUponNoSubscriptions = true;
+    this._mapping = mapping;
+  }
+
+  next(object?: T): void {
+    if (this.isDisposed) {
+      this._assertNoNext();
+    }
+    this._scheduler.schedule<R>(this._subscribers, subscriber => {
+      subscriber.next(this._mapping(object));
     });
   }
 }

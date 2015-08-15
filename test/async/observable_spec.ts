@@ -45,11 +45,30 @@ describe('Observable', () => {
     observable.subscribeOnNext(subscriber);
   });
 
-  it('publish should produce a hot observable',
-     done => {
-       Observable.publish(observer => {
-         done()
-       });
-     });
+  it('publish should produce a hot observable', done => {
+    Observable.publish(observer => {
+      done()
+    });
+  });
+
+  it('map should produce a map subject', done => {
+    let sequence: number[] = [1, 2, 3];
+    let composition: number[] = [4, 5, 6];
+    Observable.create<number>(observer => {
+        sequence.forEach(object => {
+          observer.next(object);
+        });
+      })
+      .map<number>(object => {
+        return object + 3;
+      })
+      .subscribeOnNext(object => {
+        expect(composition.indexOf(object)).to.be.above(-1);
+        composition.splice(composition.indexOf(object), 1);
+        if (composition.length === 0) {
+          done();
+        }
+      });
+  });
 
 });

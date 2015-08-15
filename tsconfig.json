@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "target": "es5",
     "noEmitOnError": true,
     "noImplicitAny": true,
     "outDir": "./dist",
     "preserveConstEnums": true,
-    "removeComments": true
+    "removeComments": true,
+    "target": "es5"
   },
   "files": [
     "./typings/tsd.d.ts",
@@ -14,6 +14,7 @@
     "./test/async/cold_observable_spec.ts",
     "./test/async/deferred_observable_spec.ts",
     "./test/async/hot_observable_spec.ts",
+    "./test/async/map_subject_spec.ts",
     "./test/async/observable_spec.ts",
     "./test/async/scheduler_spec.ts",
     "./test/async/subject_spec.ts"
