@@ -1,4 +1,4 @@
-import {Callback, OnComplete, OnError, OnNext} from './types';
+import {Notify, OnComplete, OnError, OnNext} from './types';
 
 export type Generator<T> = (observer: Observer<T>) => void;
 export type Transform<T, R> = (object?: T) => R;
@@ -9,7 +9,7 @@ export interface Disposable {
 }
 
 export interface AbstractScheduler {
-  schedule(cb: Callback): void;
+  schedule<T>(subscribers: Observer<T>[], cb: Notify<T>): void;
   tick(): void;
 }
 

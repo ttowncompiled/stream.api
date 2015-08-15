@@ -102,24 +102,24 @@ export class ColdObservable<T> extends Observable<T> {
           this._assertNoComplete();
         }
         observerCompleted = true;
-        this._scheduler.schedule(() => {
-          subscriber.complete(this);
+        this._scheduler.schedule<T>([subscriber], theSubscriber => {
+          theSubscriber.complete(this);
         });
       },
       error: err => {
         if (observerCompleted) {
           this._assertNoError();
         }
-        this._scheduler.schedule(() => {
-          subscriber.error(err);
+        this._scheduler.schedule<T>([subscriber], theSubscriber => {
+          theSubscriber.error(err);
         });
       },
       next: object => {
         if (observerCompleted) {
           this._assertNoNext();
         }
-        this._scheduler.schedule(() => {
-          subscriber.next(object);
+        this._scheduler.schedule<T>([subscriber], theSubscriber => {
+          theSubscriber.next(object);
         });
       }
     };
@@ -144,13 +144,9 @@ export abstract class PublishableObservable<T> extends Observable<T> {
 
   dispose(): void {
     this.isDisposed = true;
-    this._scheduler.schedule(() => {
-      this._subscribers.forEach(subscriber => {
-        setTimeout(() => {
-          subscriber.complete(this);
-        });
-      });
-      this._subscribers = [];
+    this._scheduler.schedule<T>(this._subscribers, subscriber => {
+      subscriber.complete(this);
+      // TODO(ttowncompiled): this._subscribers = []
     });
   }
 
@@ -166,24 +162,16 @@ export abstract class PublishableObservable<T> extends Observable<T> {
         if (this.isDisposed) {
           this._assertNoError();
         }
-        this._scheduler.schedule(() => {
-          this._subscribers.forEach(subscriber => {
-            setTimeout(() => {
-              subscriber.error(err);
-            });
-          });
+        this._scheduler.schedule<T>(this._subscribers, subscriber => {
+          subscriber.error(err);
         });
       },
       next: object => {
         if (this.isDisposed) {
           this._assertNoNext();
         }
-        this._scheduler.schedule(() => {
-          this._subscribers.forEach(subscriber => {
-            setTimeout(() => {
-              subscriber.next(object);
-            });
-          });
+        this._scheduler.schedule<T>(this._subscribers, subscriber => {
+          subscriber.next(object);
         });
       }
     };
