@@ -193,10 +193,12 @@ export class ColdObservable<T> extends Observable<T> {
 export abstract class PublishableObservable<T> extends Observable<T> {
 
   _cb: Generator<T>;
+  _isPublished: boolean;
 
   constructor(cb: Generator<T>) {
     super();
     this._cb = cb;
+    this._isPublished = true;
   }
 
   dispose(): void {
@@ -209,6 +211,7 @@ export abstract class PublishableObservable<T> extends Observable<T> {
   }
 
   _publish(): void {
+    this._isPublished = true;
     let observer: Observer<T> = {
       complete: () => {
         if (this.isDisposed) {
@@ -241,6 +244,10 @@ export abstract class PublishableObservable<T> extends Observable<T> {
       }
     });
   }
+
+  get _shouldPublish(): boolean {
+    return this._subscribers.length > 0;
+  }
 }
 
 export class DeferredObservable<T> extends PublishableObservable<T> {
@@ -253,11 +260,10 @@ export class DeferredObservable<T> extends PublishableObservable<T> {
     if (this.isDisposed) {
       this._assertNoSubscribe();
     }
-    let published: boolean = this._subscribers.length > 0;
     for (let subscriber of subscribers) {
       this._subscribers.push(subscriber);
     }
-    if (!published && this._subscribers.length > 0) {
+    if (!this._isPublished && this._shouldPublish) {
       this._publish();
     }
   }
@@ -284,6 +290,7 @@ export abstract class BaseSubject<T, R>
     extends Observable<R> implements AbstractSubject<T, R> {
 
   _disposeUponNoSubscriptions: boolean;
+  _isPublished: boolean;
   _subscriptions: Observable<T>[];
 
   abstract next(object?: T): void;
@@ -291,6 +298,7 @@ export abstract class BaseSubject<T, R>
   constructor() {
     super();
     this._disposeUponNoSubscriptions = false;
+    this._isPublished = false;
     this._subscriptions = [];
   }
 
@@ -303,7 +311,7 @@ export abstract class BaseSubject<T, R>
 
   dispose(): void {
     this._disposeUponNoSubscriptions = true;
-    if (this._subscriptions.length === 0) {
+    if (this._shouldDispose) {
       this._disposeSubject();
     }
   }
@@ -321,14 +329,11 @@ export abstract class BaseSubject<T, R>
     if (this.isDisposed) {
       this._assertNoSubscribe();
     }
-    let published: boolean = this._subscribers.length > 0;
     for (let subscriber of subscribers) {
       this._subscribers.push(subscriber);
     }
-    if (!published && this._subscribers.length > 0) {
-      this._subscriptions.forEach(subscription => {
-        subscription.subscribe(this);
-      });
+    if (!this._isPublished && this._shouldPublish) {
+      this._publish();
     }
   }
 
@@ -336,11 +341,10 @@ export abstract class BaseSubject<T, R>
     if (this._disposeUponNoSubscriptions) {
       this._assertNoSubscribeTo();
     }
-    let published: boolean = this._subscribers.length > 0;
     for (let subscription of subscriptions) {
       this._subscriptions.push(subscription);
     }
-    if (published) {
+    if (this._isPublished) {
       for (let subscription of subscriptions) {
         subscription.subscribe(this);
       }
@@ -358,6 +362,21 @@ export abstract class BaseSubject<T, R>
     }).then(() => {
       this._subscribers = [];
     });
+  }
+
+  _publish(): void {
+    this._isPublished = true;
+    this._subscriptions.forEach(subscription => {
+      subscription.subscribe(this);
+    });
+  }
+
+  get _shouldDispose(): boolean {
+    return this._subscriptions.length === 0;
+  }
+
+  get _shouldPublish(): boolean {
+    return this._subscribers.length > 0;
   }
 
   _unsubscribeFrom(subscription: Observable<T>): void {
