@@ -117,8 +117,8 @@ describe('Observable', () => {
       .subscribe(subscriber);
   });
 
-  it('publish should produce a hot observable', done => {
-    Observable.publish(observer => {
+  it('start should produce a hot observable', done => {
+    Observable.start(observer => {
       done()
     });
   });

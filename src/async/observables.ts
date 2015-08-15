@@ -47,7 +47,7 @@ export abstract class Observable<T> implements AbstractObservable<T> {
     });
   }
 
-  static publish<E>(cb: Generator<E>): Observable<E> {
+  static start<E>(cb: Generator<E>): Observable<E> {
     return new HotObservable<E>(cb);
   }
 
