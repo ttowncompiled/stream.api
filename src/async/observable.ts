@@ -146,7 +146,8 @@ export abstract class PublishableObservable<T> extends Observable<T> {
     this.isDisposed = true;
     this._scheduler.schedule<T>(this._subscribers, subscriber => {
       subscriber.complete(this);
-      // TODO(ttowncompiled): this._subscribers = []
+    }).then(() => {
+      this._subscribers = [];
     });
   }
 

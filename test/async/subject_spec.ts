@@ -127,8 +127,10 @@ describe('Subject', () => {
        }));
        subject.subscribeOnComplete(() => {
          expect(subject.isDisposed).to.be.true;
-         expect(subject._subscribers).to.be.empty;
-         done();
+         subject._scheduler.schedule([null], () => {
+           expect(subject._subscribers).to.be.empty;
+           done();
+         });
        });
        subject.dispose();
      });
