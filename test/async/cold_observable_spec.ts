@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 import {Generator} from '../../src/core';
-import {ColdObservable} from '../../src/async/observable';
+import {ColdObservable} from '../../src/async/observables';
 
 describe('Cold Observable', () => {
 

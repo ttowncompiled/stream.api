@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 import {OnComplete, OnNext} from '../../src/types';
 import {Generator} from '../../src/core';
-import {HotObservable} from '../../src/async/observable';
+import {HotObservable} from '../../src/async/observables';
 
 describe('Hot Observable', () => {
 
