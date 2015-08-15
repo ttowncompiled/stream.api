@@ -1,16 +1,16 @@
-import {Callback} from '../types';
-import {AbstractScheduler} from '../core';
+import {Notification, Notify} from '../types';
+import {AbstractScheduler, Observer} from '../core';
 
 export class Scheduler implements AbstractScheduler {
 
-  _queue: Callback[];
+  _queue: Notification[];
 
   constructor() {
     this._queue = [];
   }
 
-  schedule(cb: Callback): void {
-    this._queue.push(cb);
+  schedule<T>(subscribers: Observer<T>[], cb: Notify<T>): void {
+    this._queue.push({cb: cb, subscribers: subscribers});
     if (this._queue.length === 1) {
       this._scheduleSubscription();
     }
@@ -28,7 +28,12 @@ export class Scheduler implements AbstractScheduler {
 
   _scheduleSubscription(): void {
     setTimeout(() => {
-      this._queue[0]();
+      let notification: Notification = this._queue[0];
+      notification.subscribers.forEach(subscriber => {
+        setTimeout(() => {
+          notification.cb(subscriber);
+        });
+      });
       setTimeout(() => {
         this.tick();
       });

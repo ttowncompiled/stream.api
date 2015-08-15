@@ -1,7 +1,12 @@
-import {AbstractObservable} from './core';
+import {AbstractObservable, Observer} from './core';
 
-export type Callback = () => void;
+export type Notify<T> = (subscriber: Observer<T>) => void;
 
 export type OnComplete<T> = (subscription?: AbstractObservable<T>) => void;
 export type OnError = (err: any) => void;
 export type OnNext<T> = (object?: T) => void;
+
+export interface Notification {
+  cb: Notify<any>;
+  subscribers: Observer<any>[];
+}

@@ -30,12 +30,8 @@ export class Subject<T> extends Observable<T> implements AbstractSubject<T> {
     if (this.isDisposed) {
       this._assertNoError();
     }
-    this._scheduler.schedule(() => {
-      this._subscribers.forEach(subscriber => {
-        setTimeout(() => {
-          subscriber.error(err);
-        });
-      });
+    this._scheduler.schedule(this._subscribers, subscriber => {
+      subscriber.error(err);
     });
   }
 
@@ -43,12 +39,8 @@ export class Subject<T> extends Observable<T> implements AbstractSubject<T> {
     if (this.isDisposed) {
       this._assertNoNext();
     }
-    this._scheduler.schedule(() => {
-      this._subscribers.forEach(subscriber => {
-        setTimeout(() => {
-          subscriber.next(object);
-        });
-      });
+    this._scheduler.schedule(this._subscribers, subscriber => {
+      subscriber.next(object);
     });
   }
 
@@ -80,13 +72,9 @@ export class Subject<T> extends Observable<T> implements AbstractSubject<T> {
 
   _disposeSubject(): void {
     this.isDisposed = true;
-    this._scheduler.schedule(() => {
-      this._subscribers.forEach(subscriber => {
-        setTimeout(() => {
-          subscriber.complete(this);
-        });
-      });
-      this._subscribers = [];
+    this._scheduler.schedule(this._subscribers, subscriber => {
+      subscriber.complete(this);
+      // TODO(ttowncompiled): this._subscribers = [];
     });
   }
 
