@@ -1,10 +1,13 @@
 import {AbstractSubject, Observer} from '../core';
 import {Observable} from './observable';
 
-export class Subject<T> extends Observable<T> implements AbstractSubject<T> {
+export abstract class BaseSubject<T, R>
+    extends Observable<R> implements AbstractSubject<T, R> {
 
   _disposeUponNoSubscriptions: boolean;
   _subscriptions: Observable<T>[];
+
+  abstract next(object?: T): void;
 
   constructor() {
     super();
@@ -30,21 +33,12 @@ export class Subject<T> extends Observable<T> implements AbstractSubject<T> {
     if (this.isDisposed) {
       this._assertNoError();
     }
-    this._scheduler.schedule<T>(this._subscribers, subscriber => {
+    this._scheduler.schedule<R>(this._subscribers, subscriber => {
       subscriber.error(err);
     });
   }
 
-  next(object?: T): void {
-    if (this.isDisposed) {
-      this._assertNoNext();
-    }
-    this._scheduler.schedule<T>(this._subscribers, subscriber => {
-      subscriber.next(object);
-    });
-  }
-
-  subscribe(subscriber: Observer<T>): void {
+  subscribe(subscriber: Observer<R>): void {
     if (this.isDisposed) {
       this._assertNoSubscribe();
     }
@@ -72,7 +66,7 @@ export class Subject<T> extends Observable<T> implements AbstractSubject<T> {
 
   _disposeSubject(): void {
     this.isDisposed = true;
-    this._scheduler.schedule<T>(this._subscribers, subscriber => {
+    this._scheduler.schedule<R>(this._subscribers, subscriber => {
       subscriber.complete(this);
     }).then(() => {
       this._subscribers = [];
@@ -87,5 +81,21 @@ export class Subject<T> extends Observable<T> implements AbstractSubject<T> {
     if (this._subscriptions.length === 0 && this._disposeUponNoSubscriptions) {
       this._disposeSubject();
     }
+  }
+}
+
+export class Subject<T> extends BaseSubject<T, T> {
+
+  constructor() {
+    super();
+  }
+
+  next(object?: T): void {
+    if (this.isDisposed) {
+      this._assertNoNext();
+    }
+    this._scheduler.schedule<T>(this._subscribers, subscriber => {
+      subscriber.next(object);
+    });
   }
 }

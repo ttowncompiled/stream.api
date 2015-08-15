@@ -55,7 +55,6 @@
     "no-var-keyword": true,
     "no-var-requires": true,
     "one-line": [true,
-        "check-open-brace",
         "check-catch",
         "check-else",
         "check-whitespace"
@@ -82,7 +81,6 @@
         "check-branch",
         "check-decl",
         "check-module",
-        "check-operator",
         "check-separator",
         "check-type"
     ]

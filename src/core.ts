@@ -23,6 +23,6 @@ export interface Observer<T> {
   next: OnNext<T>;
 }
 
-export interface AbstractSubject<T> extends AbstractObservable<T>, Observer<T> {
+export interface AbstractSubject<T, R> extends AbstractObservable<R>, Observer<T> {
   subscribeTo: (subscription: AbstractObservable<T>) => void;
 }
