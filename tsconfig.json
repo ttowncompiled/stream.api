@@ -13,6 +13,7 @@
     "./src/observer.api.ts",
     "./test/async/cold_observable_spec.ts",
     "./test/async/deferred_observable_spec.ts",
+    "./test/async/filter_subject_spec.ts",
     "./test/async/hot_observable_spec.ts",
     "./test/async/map_subject_spec.ts",
     "./test/async/observable_spec.ts",

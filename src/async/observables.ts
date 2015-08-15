@@ -324,11 +324,11 @@ export class Subject<T> extends BaseSubject<T, T> {
 
 export abstract class TransformSubject<T, R> extends BaseSubject<T, R> {
 
-  _transform: Transform<T, R>;
+  _transform: Transform<T, any>;
 
   abstract _compose(subscriber: Observer<R>, object: T): void;
 
-  constructor(subscription: Observable<T>, transform: Transform<T, R>) {
+  constructor(subscription: Observable<T>, transform: Transform<T, any>) {
     super();
     this.subscribeTo(subscription);
     this._disposeUponNoSubscriptions = true;
@@ -346,6 +346,19 @@ export abstract class TransformSubject<T, R> extends BaseSubject<T, R> {
         subscriber.error(err);
       }
     });
+  }
+}
+
+export class FilterSubject<T> extends TransformSubject<T, T> {
+
+  constructor(subscription: Observable<T>, transform: Transform<T, boolean>) {
+    super(subscription, transform);
+  }
+
+  _compose(subscriber: Observer<T>, object: T): void {
+    if (this._transform(object)) {
+      subscriber.next(object);
+    }
   }
 }
 
