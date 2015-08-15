@@ -129,7 +129,7 @@ export class ColdObservable<T> extends Observable<T> {
     this.isDisposed = true;
   }
 
-  subscribe(subscriber: Observer<T>): void {
+  subscribe(...subscribers: Observer<T>[]): void {
     if (this.isDisposed) {
       this._assertNoSubscribe();
     }
@@ -140,24 +140,24 @@ export class ColdObservable<T> extends Observable<T> {
           this._assertNoComplete();
         }
         observerCompleted = true;
-        this._scheduler.schedule<T>([subscriber], theSubscriber => {
-          theSubscriber.complete(this);
+        this._scheduler.schedule<T>(subscribers, subscriber => {
+          subscriber.complete(this);
         });
       },
       error: err => {
         if (observerCompleted) {
           this._assertNoError();
         }
-        this._scheduler.schedule<T>([subscriber], theSubscriber => {
-          theSubscriber.error(err);
+        this._scheduler.schedule<T>(subscribers, subscriber => {
+          subscriber.error(err);
         });
       },
       next: object => {
         if (observerCompleted) {
           this._assertNoNext();
         }
-        this._scheduler.schedule<T>([subscriber], theSubscriber => {
-          theSubscriber.next(object);
+        this._scheduler.schedule<T>(subscribers, subscriber => {
+          subscriber.next(object);
         });
       }
     };
@@ -225,30 +225,39 @@ export abstract class PublishableObservable<T> extends Observable<T> {
 }
 
 export class DeferredObservable<T> extends PublishableObservable<T> {
-  constructor(cb: Generator<T>) { super(cb); }
 
-  subscribe(subscriber: Observer<T>): void {
+  constructor(cb: Generator<T>) {
+    super(cb);
+  }
+
+  subscribe(...subscribers: Observer<T>[]): void {
     if (this.isDisposed) {
       this._assertNoSubscribe();
     }
-    this._subscribers.push(subscriber);
-    if (this._subscribers.length === 1) {
+    let published: boolean = this._subscribers.length > 0;
+    for (let subscriber of subscribers) {
+      this._subscribers.push(subscriber);
+    }
+    if (!published && this._subscribers.length > 0) {
       this._publish();
     }
   }
 }
 
 export class HotObservable<T> extends PublishableObservable<T> {
+
   constructor(cb: Generator<T>) {
     super(cb);
     this._publish();
   }
 
-  subscribe(subscriber: Observer<T>): void {
+  subscribe(...subscribers: Observer<T>[]): void {
     if (this.isDisposed) {
       this._assertNoSubscribe();
     }
-    this._subscribers.push(subscriber);
+    for (let subscriber of subscribers) {
+      this._subscribers.push(subscriber);
+    }
   }
 }
 
@@ -289,25 +298,33 @@ export abstract class BaseSubject<T, R>
     });
   }
 
-  subscribe(subscriber: Observer<R>): void {
+  subscribe(...subscribers: Observer<R>[]): void {
     if (this.isDisposed) {
       this._assertNoSubscribe();
     }
-    this._subscribers.push(subscriber);
-    if (this._subscribers.length === 1) {
+    let published: boolean = this._subscribers.length > 0;
+    for (let subscriber of subscribers) {
+      this._subscribers.push(subscriber);
+    }
+    if (!published && this._subscribers.length > 0) {
       this._subscriptions.forEach(subscription => {
         subscription.subscribe(this);
       });
     }
   }
 
-  subscribeTo(subscription: Observable<T>): void {
+  subscribeTo(...subscriptions: Observable<T>[]): void {
     if (this._disposeUponNoSubscriptions) {
       this._assertNoSubscribeTo();
     }
-    this._subscriptions.push(subscription);
-    if (this._subscribers.length > 0) {
-      subscription.subscribe(this);
+    let published: boolean = this._subscribers.length > 0;
+    for (let subscription of subscriptions) {
+      this._subscriptions.push(subscription);
+    }
+    if (published) {
+      for (let subscription of subscriptions) {
+        subscription.subscribe(this);
+      }
     }
   }
 

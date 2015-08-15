@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 import {OnComplete, OnNext} from '../../src/types';
-import {Generator} from '../../src/core';
+import {Generator, Observer} from '../../src/core';
 import {DeferredObservable} from '../../src/async/observables';
 
 describe('Deferred Observable', () => {
@@ -110,6 +110,25 @@ describe('Deferred Observable', () => {
         new DeferredObservable<number>(cb);
     observable.subscribeOnNext(subscriber);
     observable.subscribeOnNext(subscriber);
+  });
+
+  it('should allow multiple subscribers at one time', done => {
+    let completed: boolean = false;
+    let observable: DeferredObservable<void> =
+        new DeferredObservable<void>(observer => {
+          observer.complete();
+        });
+    let subscriber: Observer<void> = {
+      complete: () => {
+        if (completed) {
+          done();
+        }
+        completed = true;
+      },
+      error: err => {},
+      next: () => {}
+    };
+    observable.subscribe(subscriber, subscriber);
   });
 
   it('should trigger notifications asynchronously', done => {

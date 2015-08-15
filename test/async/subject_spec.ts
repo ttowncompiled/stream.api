@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 import {OnComplete, OnError, OnNext} from '../../src/types';
-import {Generator} from '../../src/core';
+import {Generator, Observer} from '../../src/core';
 import {Observable, Subject} from '../../src/async';
 
 describe('Subject', () => {
@@ -103,6 +103,44 @@ describe('Subject', () => {
     };
     subject.subscribeOnNext(subscriber);
     subject.subscribeOnNext(subscriber);
+  });
+
+  it('should allow multiple subscribers at one time', done => {
+    let completed: boolean = false;
+    let subject: Subject<void> = new Subject<void>();
+    subject.subscribeTo(Observable.create<void>(observer => {
+      observer.complete();
+    }));
+    subject.dispose();
+    let subscriber: Observer<void> = {
+      complete: () => {
+        if (completed) {
+          done();
+        }
+        completed = true;
+      },
+      error: err => {},
+      next: () => {}
+    };
+    subject.subscribe(subscriber, subscriber);
+  });
+
+  it('should allow multiple subscriptions at one time', done => {
+    let zero: number = 0;
+    let count: number = 0;
+    let observable: Observable<number>
+          = Observable.create<number>(observer => {
+      observer.next(zero);
+    });
+    let subject: Subject<number> = new Subject<number>();
+    subject.subscribeTo(observable, observable);
+    subject.subscribeOnNext(object => {
+      expect(object).to.equal(zero);
+      count++;
+      if (count === [observable, observable].length) {
+        done();
+      }
+    });
   });
 
   it('should trigger notifications asynchronously', done => {

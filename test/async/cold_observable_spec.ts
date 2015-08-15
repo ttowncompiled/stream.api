@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {Generator} from '../../src/core';
+import {Generator, Observer} from '../../src/core';
 import {ColdObservable} from '../../src/async/observables';
 
 describe('Cold Observable', () => {
@@ -67,6 +67,25 @@ describe('Cold Observable', () => {
       expect(subscription).to.equal(observable);
       done();
     });
+  });
+
+  it('should allow multiple subscribers at one time', done => {
+    let completed: boolean = false;
+    let observable: ColdObservable<void> =
+        new ColdObservable<void>(observer => {
+          observer.complete();
+        });
+    let subscriber: Observer<void> = {
+      complete: () => {
+        if (completed) {
+          done();
+        }
+        completed = true;
+      },
+      error: err => {},
+      next: () => {}
+    };
+    observable.subscribe(subscriber, subscriber);
   });
 
   it('should trigger notifications asynchronously', done => {
