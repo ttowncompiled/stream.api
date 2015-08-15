@@ -32,7 +32,7 @@ describe('Map Subject', () => {
       observer.complete();
     };
     let mapping: Transform<void, void> = () => {};
-    let observable: Observable<void> = Observable.create<void>(cb)
+    let observable: Observable<void> = Observable.create<void>(cb);
     let subject: MapSubject<void, void>
         = new MapSubject<void, void>(observable, mapping);
     subject.subscribeOnComplete(() => {
@@ -45,7 +45,7 @@ describe('Map Subject', () => {
   });
 
   it('should throw an error if it calls next after being disposed', done => {
-    let observable: Observable<void> = Observable.create<void>(null)
+    let observable: Observable<void> = Observable.create<void>(null);
     let subject: MapSubject<void, void>
         = new MapSubject<void, void>(observable, null);
     subject.complete(observable);
@@ -54,6 +54,20 @@ describe('Map Subject', () => {
     } catch (err) {
       done();
     }
+  });
+
+  it('should catch any error throw inside of its transform', done => {
+    let zero: number = 0;
+    let cb: Generator<number> = observer => {
+      observer.next(zero);
+    };
+    let mapping: Transform<number, void> = object => {
+      throw new Error('map subject transform catch test');
+    };
+    let observable: Observable<number> = Observable.create<number>(cb);
+    let subject: MapSubject<number, void>
+        = new MapSubject<number, void>(observable, mapping);
+    subject.subscribeOnError(err => done());
   });
 
 });

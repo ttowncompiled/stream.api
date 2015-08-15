@@ -338,7 +338,11 @@ export class MapSubject<T, R> extends BaseSubject<T, R> {
       this._assertNoNext();
     }
     this._scheduler.schedule<R>(this._subscribers, subscriber => {
-      subscriber.next(this._mapping(object));
+      try {
+        subscriber.next(this._mapping(object));
+      } catch (err) {
+        subscriber.error(err);
+      }
     });
   }
 }
