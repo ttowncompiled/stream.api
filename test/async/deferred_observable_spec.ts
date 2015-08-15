@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 import {OnComplete, OnNext} from '../../src/types';
 import {Generator} from '../../src/core';
-import {DeferredObservable} from '../../src/async/observable';
+import {DeferredObservable} from '../../src/async/observables';
 
 describe('Deferred Observable', () => {
 
