@@ -74,7 +74,8 @@ export class Subject<T> extends Observable<T> implements AbstractSubject<T> {
     this.isDisposed = true;
     this._scheduler.schedule(this._subscribers, subscriber => {
       subscriber.complete(this);
-      // TODO(ttowncompiled): this._subscribers = [];
+    }).then(() => {
+      this._subscribers = [];
     });
   }
 
