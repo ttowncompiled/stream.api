@@ -73,6 +73,16 @@ export abstract class Observable<T> implements AbstractObservable<T> {
     this._subscribers = [];
   }
 
+  join(...subscriptions: Observable<T>[]): Observable<T> {
+    let subject: Subject<T> = new Subject<T>();
+    subject.subscribeTo(this);
+    for (let subscription of subscriptions) {
+      subject.subscribeTo(subscription);
+    }
+    subject.dispose();
+    return subject;
+  }
+
   map<R>(mapping: Transform<T, R>): Observable<R> {
     return new MapSubject<T, R>(this, mapping);
   }

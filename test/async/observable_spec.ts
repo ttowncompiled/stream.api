@@ -183,6 +183,40 @@ describe('Observable', () => {
       .subscribe(subscriber);
   });
 
+  it('join should produce a deferred observable containing the subscriptions',
+     done => {
+       let zero: number = 0;
+       let count: number = 0;
+       let observable: Observable<number> = Observable.of<number>(zero);
+       observable.join(observable)
+         .subscribeOnNext(object => {
+           expect(object).to.equal(zero);
+           count++;
+           if (count === [observable, observable].length) {
+             done();
+           }
+         });
+     });
+
+  it('join should complete when all of its subscriptions complete', done => {
+    let zero: number = 0;
+    let count: number = 0;
+    let observable: Observable<number> = Observable.of<number>(zero);
+    let observer: Observer<number> = {
+      complete: () => {
+        expect(count).to.equal([observable, observable].length);
+        done();
+      },
+      error: err => {},
+      next: object => {
+        expect(object).to.equal(zero);
+        count++;
+      }
+    };
+    observable.join(observable)
+      .subscribe(observer);
+  });
+
   it('map should produce a map subject', done => {
     let sequence: number[] = [1, 2, 3];
     let composition: number[] = [4, 5, 6];
