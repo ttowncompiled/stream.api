@@ -123,6 +123,32 @@ describe('Observable', () => {
     });
   });
 
+  it('throw should produce a cold observable that emits an error', done => {
+    let error: Error = new Error('throw produce test');
+    Observable.throw<void>(error)
+      .subscribeOnError(err => {
+        expect(err).to.equal(error);
+        done();
+      });
+  });
+
+  it('throw should complete after emitting the error', done => {
+    let error: Error = new Error('throw complete test');
+    let count: number = 0;
+    let subscriber: Observer<void> = {
+      complete: () => {
+        expect(count).to.equal([error].length);
+        done();
+      },
+      error: err => {
+        count++;
+      },
+      next: () => {}
+    };
+    Observable.throw<void>(error)
+      .subscribe(subscriber);
+  });
+
   it('map should produce a map subject', done => {
     let sequence: number[] = [1, 2, 3];
     let composition: number[] = [4, 5, 6];

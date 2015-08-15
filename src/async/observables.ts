@@ -51,6 +51,13 @@ export abstract class Observable<T> implements AbstractObservable<T> {
     return new HotObservable<E>(cb);
   }
 
+  static throw<E>(err: any): Observable<E> {
+    return new ColdObservable<E>(observer => {
+      observer.error(err);
+      observer.complete();
+    });
+  }
+
   constructor() {
     this.isDisposed = false;
     this._scheduler = new Scheduler();
