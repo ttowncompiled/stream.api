@@ -75,6 +75,32 @@ describe('Observable', () => {
       .subscribe(subscriber);
   });
 
+  it('of should produce a cold observable that emits the object', done => {
+    let zero: number = 0;
+    Observable.of<number>(zero)
+      .subscribeOnNext(object => {
+        expect(object).to.equal(zero);
+        done();
+      });
+  });
+
+  it('of should complete after emitting the object', done => {
+    let zero: number = 0;
+    let count: number = 0;
+    let subscriber: Observer<number> = {
+      complete: () => {
+        expect(count).to.equal([zero].length);
+        done();
+      },
+      error: err => {},
+      next: () => {
+        count++;
+      }
+    };
+    Observable.of<number>(zero)
+      .subscribe(subscriber);
+  });
+
   it('publish should produce a hot observable', done => {
     Observable.publish(observer => {
       done()
