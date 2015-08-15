@@ -91,6 +91,40 @@ describe('Observable', () => {
       .subscribe(subscriber);
   });
 
+  it('merge should produce a deferred observable containing the subscriptions',
+     done => {
+       let zero: number = 0;
+       let count: number = 0;
+       let observable: Observable<number> = Observable.of<number>(zero);
+       Observable.merge<number>(observable, observable)
+         .subscribeOnNext(object => {
+           expect(object).to.equal(zero);
+           count++;
+           if (count === [observable, observable].length) {
+             done();
+           }
+         });
+     });
+
+  it('merge should complete when all of its subscriptions complete', done => {
+    let zero: number = 0;
+    let count: number = 0;
+    let observable: Observable<number> = Observable.of<number>(zero);
+    let observer: Observer<number> = {
+      complete: () => {
+        expect(count).to.equal([observable, observable].length);
+        done();
+      },
+      error: err => {},
+      next: object => {
+        expect(object).to.equal(zero);
+        count++;
+      }
+    };
+    Observable.merge<number>(observable, observable)
+      .subscribe(observer);
+  });
+
   it('of should produce a cold observable that emits the object', done => {
     let zero: number = 0;
     Observable.of<number>(zero)

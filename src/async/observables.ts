@@ -40,6 +40,15 @@ export abstract class Observable<T> implements AbstractObservable<T> {
     });
   }
 
+  static merge<E>(...subscriptions: Observable<E>[]): Observable<E> {
+    let subject: Subject<E> = new Subject<E>();
+    for (let subscription of subscriptions) {
+      subject.subscribeTo(subscription);
+    }
+    subject.dispose();
+    return subject;
+  }
+
   static of<E>(object?: E): Observable<E> {
     return new ColdObservable<E>(observer => {
       observer.next(object);
